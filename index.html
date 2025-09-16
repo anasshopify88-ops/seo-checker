@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>تدقيق SEO للمتجر — زحف حي وتقرير شامل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root{
+      --bg: #0b1020; --card:#0f152b; --muted:#9aa4bf; --fg:#e8ecf7;
+      --brand:#7c5cff; --brand-2:#22d3ee;
+      --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --info:#38bdf8;
+      --line: rgba(255,255,255,0.08);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f8fc; --card:#ffffff; --muted:#667085; --fg:#1f2937;
+        --brand:#4f46e5; --brand-2:#06b6d4;
+        --ok:#16a34a; --warn:#d97706; --bad:#dc2626; --info:#0ea5e9;
+        --line:#e5e7eb;
+      }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial; background:var(--bg); color:var(--fg); min-height:100vh; display:flex; flex-direction:column;}
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(180%) blur(10px);
+      background:linear-gradient(90deg, rgba(124,92,255,.12), rgba(34,211,238,.12)) ;
+      border-bottom:1px solid var(--line);
+    }
+    .nav{
+      max-width:1100px; margin:auto; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.3px}
+    .logo{
+      width:40px; height:40px; display:grid; place-items:center; color:#fff; font-weight:900;
+      background:conic-gradient(from 200deg, var(--brand), var(--brand-2)); border-radius:10px;
+      box-shadow: 0 10px 30px rgba(124,92,255,.25);
+    }
+    .actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .btn{border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; color:#fff; background:var(--brand);}
+    .btn.ghost{background:transparent; color:var(--fg); border:1px solid var(--line)}
+    .btn.alt{background:var(--ok)}
+    .btn.small{padding:8px 10px; font-weight:600}
+    main{flex:1}
+    .wrap{max-width:1100px; margin:auto; padding:20px; display:grid; gap:16px}
+    .hero{
+      background:linear-gradient(180deg, rgba(124,92,255,.08), transparent);
+      border:1px solid var(--line); border-radius:16px; padding:20px; display:grid; gap:8px
+    }
+    .hero h1{margin:0; font-size:24px}
+    .muted{color:var(--muted); font-size:.95rem}
+    .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:16px}
+    @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+    .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; display:grid; gap:10px}
+    label{font-weight:700; margin-bottom:4px; display:block}
+    input[type="text"], input[type="number"], select{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--fg)
+    }
+    .hint{font-size:.85rem; color:var(--muted)}
+    details.adv{border:1px dashed var(--line); border-radius:12px; padding:12px}
+    details summary{cursor:pointer; font-weight:700}
+    .progressbar{
+      height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden;
+      position:relative;
+    }
+    .progressbar > span{
+      position:absolute; inset:0 100% 0 0; background:linear-gradient(90deg,var(--brand), var(--brand-2)); transition:inset .3s ease; border-radius:999px
+    }
+    .kpis{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+    @media (min-width:700px){ .kpis{grid-template-columns:repeat(4,1fr)} }
+    .kpi{border:1px solid var(--line); border-radius:14px; padding:12px}
+    .kpi .val{font-size:22px; font-weight:900}
+    .kpi.ok .val{color:var(--ok)} .kpi.warn .val{color:var(--warn)} .kpi.bad .val{color:var(--bad)} .kpi.info .val{color:var(--info)}
+    table{width:100%; border-collapse:collapse; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+    th,td{border-bottom:1px solid var(--line); padding:10px; text-align:center}
+    th{background:rgba(124,92,255,.08)}
+    .pill{display:inline-block; padding:4px 10px; border-radius:999px; font-size:.85rem; border:1px solid var(--line)}
+    .sev-ok{background: rgba(34,197,94,.12); color: var(--ok)}
+    .sev-warn{background: rgba(245,158,11,.12); color: var(--warn)}
+    .sev-bad{background: rgba(239,68,68,.12); color: var(--bad)}
+    .footer-cta{background:linear-gradient(180deg, transparent, rgba(34,211,238,.08)); border:1px solid var(--line); border-radius:16px; padding:16px}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav" role="navigation" aria-label="الشريط العلوي">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>Store Auditor Pro</div>
+      </div>
+      <div class="actions">
+        <button id="btn-back" class="btn ghost small">رجوع</button>
+        <a class="btn ghost small" href="https://anasrashed.com" rel="noopener">الرئيسية</a>
+        <button id="theme-toggle" class="btn small">وضع ليلي/نهاري</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <section class="hero">
+        <h1>تدقيق SEO للمتجر مع زحف حيّ وتقارير دقيقة</h1>
+        <p class="muted">اكتب رابط متجرك ثم ابدأ الزحف. سترى التقدّم والنتائج لحظيًا، ويمكنك لاحقًا توليد تقرير PDF كامل بعد الدفع.</p>
+      </section>
+
+      <div class="grid">
+        <section class="card" aria-labelledby="formTitle">
+          <h2 id="formTitle" style="margin:0">ابدأ الفحص</h2>
+
+          <label for="store-url">رابط المتجر (URL)</label>
+          <input id="store-url" type="text" placeholder="https://example.com" inputmode="url" />
+
+          <details class="adv">
+            <summary>الخيارات المتقدمة</summary>
+            <div style="margin-top:10px; display:grid; grid-template-columns:repeat(2,1fr); gap:10px">
+              <div>
+                <label for="max-pages">حد الصفحات (30–200)</label>
+                <input id="max-pages" type="number" min="30" max="200" value="100" />
+              </div>
+              <div>
+                <label for="max-depth">عمق الزحف (1–10)</label>
+                <input id="max-depth" type="number" min="1" max="10" value="3" />
+              </div>
+              <div>
+                <label for="internal-only"><input id="internal-only" type="checkbox" checked /> روابط داخلية فقط</label>
+              </div>
+              <div>
+                <label for="respect-robots"><input id="respect-robots" type="checkbox" checked /> احترام robots.txt</label>
+              </div>
+            </div>
+            <p class="hint">يتم تلقائيًا تجاهل مسارات غير مفيدة (cart/checkout/login…)، ولن يتم إرسال أي بيانات حساسة.</p>
+          </details>
+
+          <div>
+            <button id="start-btn" class="btn">ابدأ الزحف</button>
+            <span class="hint" id="eta-hint">قد يستغرق حسب حجم المتجر وسرعة الاستضافة.</span>
+          </div>
+
+          <div class="progressbar" aria-label="شريط التقدم" aria-live="polite">
+            <span id="bar" style="inset:0 100% 0 0"></span>
+          </div>
+          <div class="row">
+            <div>التقدّم: <strong><span id="prog">0</span>/<span id="tot">0</span></strong></div>
+            <div class="muted">الزمن: <span id="time">0.0</span> ث</div>
+          </div>
+
+          <div id="live-log" class="card" style="max-height:220px; overflow:auto; display:none">
+            <div class="muted">السجل الحي:</div>
+            <ul id="log" style="list-style:none; margin:0; padding:0; display:grid; gap:6px"></ul>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="summaryTitle">
+          <h2 id="summaryTitle" style="margin:0">الملخص الفوري</h2>
+          <div class="kpis">
+            <div class="kpi info"><div class="muted">ON-Page Score</div><div class="val" id="kpi-onpage">—</div></div>
+            <div class="kpi"><div class="muted">سرعة (كمبيوتر)</div><div class="val" id="kpi-speed-d">—</div></div>
+            <div class="kpi"><div class="muted">سرعة (جوال)</div><div class="val" id="kpi-speed-m">—</div></div>
+            <div class="kpi"><div class="muted">صور &gt; 100KB</div><div class="val" id="kpi-bigimg">—</div></div>
+          </div>
+
+          <table aria-label="ملخص">
+            <tbody>
+              <tr><th>البند</th><th>القيمة</th><th>الحالة</th></tr>
+              <tr><td>روابط مكسورة</td><td id="sum-broken">—</td><td id="sev-broken" class="pill"></td></tr>
+              <tr><td>خريطة موقع</td><td id="sum-sitemap">—</td><td class="pill"></td></tr>
+              <tr><td>عناوين طويلة (&gt;60)</td><td id="sum-title-long">—</td><td id="sev-title-long" class="pill"></td></tr>
+              <tr><td>عناوين قصيرة (&lt;30)</td><td id="sum-title-short">—</td><td id="sev-title-short" class="pill"></td></tr>
+              <tr><td>وصف ميتا طويل (&gt;160)</td><td id="sum-meta-long">—</td><td id="sev-meta-long" class="pill"></td></tr>
+              <tr><td>وصف ميتا قصير (&lt;80)</td><td id="sum-meta-short">—</td><td id="sev-meta-short" class="pill"></td></tr>
+              <tr><td>صور بلا Alt</td><td id="sum-no-alt">—</td><td id="sev-no-alt" class="pill"></td></tr>
+              <tr><td>روابط طويلة جدًا (&gt;115)</td><td id="sum-url-long">—</td><td id="sev-url-long" class="pill"></td></tr>
+              <tr><td>عناوين مكرّرة</td><td id="sum-title-dup">—</td><td id="sev-title-dup" class="pill"></td></tr>
+              <tr><td>صفحات محظورة</td><td id="sum-blocked">—</td><td id="sev-blocked" class="pill"></td></tr>
+              <tr><td>Backlinks</td><td id="sum-backlinks">—</td><td class="pill"></td></tr>
+              <tr><td>Organic Visits</td><td id="sum-organic">—</td><td class="pill"></td></tr>
+            </tbody>
+          </table>
+
+          <div class="footer-cta">
+            <div class="row">
+              <div>
+                <div class="muted">تم فحص <strong><span id="scanned">0</span></strong> صفحة — <span class="muted">توليد تقرير تفصيلي PDF بعد الدفع</span></div>
+              </div>
+              <div>
+                <button id="pay" class="btn alt">ادفع 25 ريال</button>
+                <button id="pdf" class="btn" disabled>توليد PDF</button>
+              </div>
+            </div>
+            <div class="hint">لملء Backlinks/Organic بدقة، فعّل مفاتيح مزوّدين في العامل (Ahrefs/Semrush). وإلا ستظهر "—".</div>
+          </div>
+        </section>
+      </div>
+
+      <section id="issues" class="card" style="display:none">
+        <h3 style="margin:0">أبرز المشاكل المكتشفة</h3>
+        <div id="issues-list" style="display:grid; gap:8px"></div>
+      </section>
+
+      <section id="pages" class="card" style="display:none">
+        <h3 style="margin:0">عينة من الصفحات</h3>
+        <table>
+          <thead><tr><th>#</th><th>الحالة</th><th class="mono">URL</th><th>عنوان</th><th>H1</th><th>صور&gt;100KB</th><th>روابط مكسورة</th></tr></thead>
+          <tbody id="pages-tbody"></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <!-- jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" integrity="sha256-gcsq+q2SrkR2hQmsTNs3tgH5D8V+qv0c7ZcF8+4Y7Ww=" crossorigin="anonymous"></script>
+
+  <script>
+    // ===== إعدادات =====
+    const WORKER_BASE = 'https://seo-checker.anasshopify88.workers.dev';
+    const PAYMENT_LINK = 'https://<ضع-رابط-الدفع-النهائي>';
+    const RETURN_PARAM = 'paid';
+    const RETURN_VALUE = '1';
+    const DEFAULT_MAX_PAGES = 100;
+
+    // ===== حالة الدفع وواجهة =====
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => [...document.querySelectorAll(sel)];
+    const paid = () => localStorage.getItem('seo_paid') === '1';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      if (params.get(RETURN_PARAM) === RETURN_VALUE) localStorage.setItem('seo_paid','1');
+      if (paid()) $('#pdf').disabled = false;
+    });
+
+    $('#btn-back').onclick = () => history.back();
+    $('#theme-toggle').onclick = () => {
+      // بسيط: قلب تفضيل نظام الألوان باستخدام class على body
+      document.body.classList.toggle('force-light');
+    };
+    $('#pay').onclick = () => location.href = PAYMENT_LINK;
+
+    // ===== سِجل حي =====
+    const logEl = $('#log');
+    function pushLog(msg){
+      $('#live-log').style.display = 'block';
+      const li = document.createElement('li');
+      li.textContent = msg;
+      logEl.prepend(li);
+    }
+
+    // ===== تحقّق URL =====
+    function isValidHttpUrl(value){
+      try{ const u = new URL(value); return ['http:','https:'].includes(u.protocol); }catch{ return false; }
+    }
+
+    // ===== تقدّم =====
+    const state = {
+      startAt: 0,
+      total: 0,
+      count: 0,
+      pages: [],
+      sitemap: false
+    };
+    function setProgress(c, t){
+      state.count = c; state.total = t;
+      $('#prog').textContent = c; $('#tot').textContent = t;
+      const pct = t? Math.min(100, Math.round((c/t)*100)) : 0;
+      $('#bar').style.inset = `0 ${100-pct}% 0 0`;
+      const sec = ((performance.now() - state.startAt)/1000).toFixed(1);
+      $('#time').textContent = sec;
+    }
+
+    // ===== حساب الملخص =====
+    function computeSummary(pages, sitemapExists){
+      const pagesScanned = pages.length;
+      let scores = [], imgsLarge=0, broken=0, titlesLong=0, titlesShort=0, metaLong=0, metaShort=0, imgsNoAlt=0, urlsLong=0, titlesDup=0, blocked=0;
+      let speedD=[], speedM=[];
+      const titleMap = new Map();
+
+      for(const page of pages){
+        const t = (page.title || '').trim();
+        if (t.length>60) titlesLong++;
+        if (t.length && t.length<30) titlesShort++;
+        if (t){ titleMap.set(t, (titleMap.get(t)||0)+1); }
+
+        const d = (page.description || '').trim();
+        if (d.length>160) metaLong++;
+        if (d.length && d.length<80) metaShort++;
+
+        imgsLarge += page.total_img_over_100kb || 0;
+        imgsNoAlt += (page.images||[]).filter(i => !i.alt || !i.alt.trim()).length;
+        urlsLong += (page.url && page.url.length>115) ? 1 : 0;
+        blocked += page.blocked ? 1 : 0;
+        broken += page.broken_links_count || 0;
+
+        const ds = estimateSpeedScore(page,false); speedD.push(ds);
+        const ms = estimateSpeedScore(page,true);  speedM.push(ms);
+
+        scores.push(estimateOnPageScore(page));
+      }
+
+      for(const [t,c] of titleMap.entries()) if(c>1) titlesDup += (c-1);
+
+      const avg = arr => arr.length? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+
+      return {
+        pagesScanned,
+        onPageScore: avg(scores).toFixed(1),
+        speedDesktop: avg(speedD).toFixed(1),
+        speedMobile: avg(speedM).toFixed(1),
+        imgsLarge,
+        brokenLinks: broken,
+        sitemapExists,
+        titlesLong, titlesShort, metaLong, metaShort,
+        imgsNoAlt, urlsLong, titlesDup, pagesBlocked: blocked
+      };
+    }
+
+    // نفس الخوارزميات لكن بأسطر مستقلة لسهولة المراجعة
+    function estimateOnPageScore(page){
+      let score = 0;
+      const title = page.title || '';
+      if (title.length>=30 && title.length<=60) score += 10;
+
+      const meta = page.description || '';
+      if (meta.length>=80 && meta.length<=160) score += 10;
+
+      const h1 = (page.h1||'').trim();
+      if (h1) score += (title && h1===title.trim())? 10 : 6;
+
+      if (page.canonical && /^https?:\/\//.test(page.canonical)) score += 5;
+      if (!page.blocked) score += 6;
+
+      // تواجد بيانات منظمة
+      if (page.has_schema_ld) score += 6;
+
+      // ALT للصور
+      const imgs = page.images||[];
+      if (imgs.length===0) score += 10;
+      else {
+        const noAlt = imgs.filter(i=> !i.alt || !i.alt.trim()).length;
+        const ratio = noAlt/imgs.length;
+        if (ratio<0.05) score += 10;
+        else if (ratio<0.2) score += 5;
+      }
+
+      // URL نظيف
+      if (page.url && page.url.length<=115 && !page.url.includes('?')) score += 5;
+
+      // OG/Twitter
+      const h = page.headersSubset||{};
+      if (h['og:title'] || h['twitter:title']) score += 5;
+
+      // داخلي
+      if (page.internal_links && page.internal_links.length>=6) score += 5;
+
+      // سرعة
+      const sp = (estimateSpeedScore(page,false)+estimateSpeedScore(page,true))/2;
+      score += sp * 0.22;
+
+      return Math.min(100, Math.max(0, score));
+    }
+    function estimateSpeedScore(page, mobile){
+      let score = 100;
+      const largeImgs = page.total_img_over_100kb || 0;
+      score -= Math.min(largeImgs * (mobile? 1.6 : 1.1), 32);
+
+      const blocks = (page.css_blocks||0) + (page.js_blocks||0);
+      score -= Math.min(blocks * (mobile? 1.8 : 1.0), 24);
+
+      const imgs = page.images||[];
+      if (imgs.length){
+        const lazy = imgs.filter(i => (i.loading||'').toLowerCase()==='lazy').length;
+        const r = lazy/imgs.length;
+        if (r<0.2) score -= (mobile? 15:10);
+      }
+      const modern = page.modern_formats_ratio ?? 0;
+      if (modern<0.5) score -= (mobile? 12:6);
+
+      if (!page.compression) score -= (mobile? 12:6);
+      return Math.max(0, Math.min(100, score));
+    }
+
+    // ===== ملء الواجهة =====
+    function sevPill(num, warn, bad){
+      const span = document.createElement('span');
+      span.className = 'pill ' + (num>=bad? 'sev-bad' : num>=warn? 'sev-warn' : 'sev-ok');
+      span.textContent = num===0? 'جيد' : (num>=bad? 'سيّئ' : 'متوسط');
+      return span;
+    }
+
+    function renderSummary(sum){
+      $('#kpi-onpage').textContent = sum.onPageScore;
+      $('#kpi-speed-d').textContent = sum.speedDesktop;
+      $('#kpi-speed-m').textContent = sum.speedMobile;
+      $('#kpi-bigimg').textContent = sum.imgsLarge;
+
+      $('#sum-broken').textContent = sum.brokenLinks;
+      $('#sum-sitemap').innerHTML = sum.sitemapExists ? 'موجود' : 'غير موجود <a class="mono" href="https://smg.anasrashed.com" target="_blank" rel="noopener">إنشاء الآن</a>';
+      $('#sum-title-long').textContent = sum.titlesLong;
+      $('#sum-title-short').textContent = sum.titlesShort;
+      $('#sum-meta-long').textContent = sum.metaLong;
+      $('#sum-meta-short').textContent = sum.metaShort;
+      $('#sum-no-alt').textContent = sum.imgsNoAlt;
+      $('#sum-url-long').textContent = sum.urlsLong;
+      $('#sum-title-dup').textContent = sum.titlesDup;
+      $('#sum-blocked').textContent = sum.pagesBlocked;
+
+      $('#sev-broken').replaceWith(sevPill(sum.brokenLinks, 1, 4));
+      $('#sev-title-long').replaceWith(sevPill(sum.titlesLong, 3, 8));
+      $('#sev-title-short').replaceWith(sevPill(sum.titlesShort, 3, 8));
+      $('#sev-meta-long').replaceWith(sevPill(sum.metaLong, 3, 8));
+      $('#sev-meta-short').replaceWith(sevPill(sum.metaShort, 3, 8));
+      $('#sev-no-alt').replaceWith(sevPill(sum.imgsNoAlt, 5, 15));
+      $('#sev-url-long').replaceWith(sevPill(sum.urlsLong, 3, 8));
+      $('#sev-title-dup').replaceWith(sevPill(sum.titlesDup, 1, 4));
+      $('#sev-blocked').replaceWith(sevPill(sum.pagesBlocked, 1, 3));
+
+      $('#scanned').textContent = sum.pagesScanned;
+    }
+
+    function renderPagesTable(pages){
+      const tbody = $('#pages-tbody'); tbody.innerHTML = '';
+      const sample = pages.slice(0, 40); // عينة معقولة للعرض
+      sample.forEach((p,i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td>${p.status ?? ''}${p.blocked? ' (blocked)': ''}</td>
+          <td class="mono" style="text-align:right; direction:ltr">${p.url}</td>
+          <td>${(p.title||'').slice(0,60)}</td>
+          <td>${(p.h1||'').slice(0,60)}</td>
+          <td>${p.total_img_over_100kb||0}</td>
+          <td>${p.broken_links_count||0}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      $('#pages').style.display = pages.length ? 'block' : 'none';
+    }
+
+    function renderIssues(sum){
+      const box = $('#issues-list'); box.innerHTML='';
+      const issues = [
+        {k:'titlesLong', label:'عناوين طويلة', count:sum.titlesLong, tip:'قصّر العنوان إلى 30–60 حرفًا مع الكلمة المفتاحية مبكرًا.'},
+        {k:'titlesShort', label:'عناوين قصيرة', count:sum.titlesShort, tip:'زد الوصف داخل العنوان وأضف قيمة فريدة.'},
+        {k:'metaLong', label:'وصف ميتا طويل', count:sum.metaLong, tip:'قلّله إلى 80–160 حرفًا مع CTA.'},
+        {k:'metaShort', label:'وصف ميتا قصير', count:sum.metaShort, tip:'أضف تفاصيل وCTA واضح.'},
+        {k:'imgsNoAlt', label:'صور بلا نص بديل', count:sum.imgsNoAlt, tip:'أضف alt وصِف المحتوى والسياق.'},
+        {k:'brokenLinks', label:'روابط مكسورة', count:sum.brokenLinks, tip:'أصلح الروابط أو حدّثها/أعد التوجيه.'},
+        {k:'urlsLong', label:'روابط طويلة جدًا', count:sum.urlsLong, tip:'بسّط المسارات وتخلّص من المعاملات غير الضرورية.'},
+        {k:'titlesDup', label:'عناوين مكرّرة', count:sum.titlesDup, tip:'اجعل لكل صفحة عنوانًا فريدًا.'},
+        {k:'pagesBlocked', label:'صفحات محظورة', count:sum.pagesBlocked, tip:'راجع noindex/robots.txt بعناية.'}
+      ];
+      issues.filter(i=>i.count>0).forEach(i=>{
+        const row = document.createElement('div');
+        row.className = 'card';
+        row.innerHTML = `<strong>${i.label}</strong> — ${i.count} صفحة. <div class="muted">${i.tip}</div>`;
+        box.appendChild(row);
+      });
+      $('#issues').style.display = box.children.length? 'block' : 'none';
+    }
+
+    // ===== تشغيل الزحف (SSE مع تراجع إلى JSON) =====
+    let abortCtrl = null;
+    $('#start-btn').onclick = async () => {
+      const url = $('#store-url').value.trim();
+      if (!isValidHttpUrl(url)){ alert('رجاءً أدخل رابط متجر صالح يبدأ بـ http(s)://'); return; }
+
+      const max = Math.max(30, Math.min(200, parseInt($('#max-pages').value)||DEFAULT_MAX_PAGES));
+      const depth = Math.max(1, Math.min(10, parseInt($('#max-depth').value)||3));
+      const internalOnly = $('#internal-only').checked ? '1' : '0';
+      const respectRobots = $('#respect-robots').checked ? '1' : '0';
+
+      // تهيئة
+      state.pages = []; state.sitemap = false; state.startAt = performance.now();
+      logEl.innerHTML = ''; $('#pages-tbody').innerHTML = '';
+      setProgress(0, max);
+
+      // طلب SSE
+      const api = new URL('/crawl', WORKER_BASE);
+      api.searchParams.set('url', url);
+      api.searchParams.set('max', String(max));
+      api.searchParams.set('depth', String(depth));
+      api.searchParams.set('internalOnly', internalOnly);
+      api.searchParams.set('respectRobots', respectRobots);
+      api.searchParams.set('stream','1');
+
+      abortCtrl = new AbortController();
+
+      try {
+        const resp = await fetch(api.toString(), { signal: abortCtrl.signal });
+        const ctype = resp.headers.get('content-type') || '';
+        if (!resp.ok) throw new Error('فشل الاتصال: '+resp.status);
+        if (!ctype.includes('text/event-stream')){
+          // تراجع إلى JSON (ينتظر للنهاية)
+          const data = await resp.json();
+          state.pages = data.pages||[]; state.sitemap = !!data.sitemap_exists;
+          setProgress(state.pages.length, state.pages.length);
+          const sum = computeSummary(state.pages, state.sitemap);
+          renderSummary(sum); renderPagesTable(state.pages); renderIssues(sum);
+          return;
+        }
+
+        // SSE parsing
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buf = '';
+        while(true){
+          const {value, done} = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, {stream:true});
+          let idx;
+          while((idx = buf.indexOf('\n\n')) >= 0){
+            const raw = buf.slice(0, idx);
+            buf = buf.slice(idx+2);
+            // parse event lines
+            const lines = raw.split('\n').map(l=>l.trim());
+            const dataLines = lines.filter(l=>l.startsWith('data:')).map(l=>l.slice(5).trim());
+            if (!dataLines.length) continue;
+            const payload = dataLines.join('\n');
+            try{
+              const evt = JSON.parse(payload);
+              if (evt.type === 'init'){
+                state.total = evt.total || max;
+                setProgress(0, state.total);
+                pushLog('بدء الزحف…');
+              } else if (evt.type === 'page'){
+                state.pages.push(evt.page);
+                const c = state.pages.length;
+                setProgress(c, state.total||max);
+                if (c<=40){ // أضف للسجل والجدول
+                  pushLog(`✔️ ${evt.page.status||''} — ${evt.page.url}`);
+                  const tr = document.createElement('tr');
+                  tr.innerHTML = `
+                    <td>${c}</td>
+                    <td>${evt.page.status ?? ''}${evt.page.blocked? ' (blocked)': ''}</td>
+                    <td class="mono" style="text-align:right; direction:ltr">${evt.page.url}</td>
+                    <td>${(evt.page.title||'').slice(0,60)}</td>
+                    <td>${(evt.page.h1||'').slice(0,60)}</td>
+                    <td>${evt.page.total_img_over_100kb||0}</td>
+                    <td>${evt.page.broken_links_count||0}</td>
+                  `;
+                  $('#pages-tbody').appendChild(tr);
+                  $('#pages').style.display = 'block';
+                }
+              } else if (evt.type === 'meta' && 'sitemap' in evt){
+                state.sitemap = !!evt.sitemap;
+              } else if (evt.type === 'done'){
+                setProgress(state.pages.length, state.pages.length);
+                pushLog('انتهى الزحف.');
+              }
+            }catch(e){ /* تجاهل */ }
+          }
+        }
+      } catch(e){
+        alert('خطأ أثناء الزحف: ' + e.message);
+      } finally {
+        const sum = computeSummary(state.pages, state.sitemap);
+        renderSummary(sum); renderPagesTable(state.pages); renderIssues(sum);
+      }
+    };
+
+    // ===== PDF =====
+    $('#pdf').onclick = () => {
+      if (!paid()) { alert('يجب تفعيل الوضع المدفوع أولاً.'); return; }
+      generatePDF();
+    };
+
+    async function generatePDF(){
+      const { jsPDF } = window.jspdf || {};
+      if (!jsPDF) { alert('تعذّر تحميل jsPDF'); return; }
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      const w = doc.internal.pageSize.getWidth();
+      const h = doc.internal.pageSize.getHeight();
+      let y = 40;
+
+      const sum = computeSummary(state.pages, state.sitemap);
+
+      doc.setFontSize(20);
+      doc.text('تقرير SEO شامل للمتجر', w/2, y, {align:'center'}); y+=30;
+      doc.setFontSize(12);
+      doc.text(`الموقع: ${$('#store-url').value.trim()}`, 40, y); y+=18;
+      doc.text(`التاريخ: ${new Date().toLocaleDateString('ar-SA')}`, 40, y); y+=18;
+      doc.text(`عدد الصفحات المفحوصة: ${sum.pagesScanned}`, 40, y); y+=22;
+
+      doc.setFontSize(14); doc.text('الملخص العام', 40, y); y+=18; doc.setFontSize(11);
+      const entries = [
+        ['ON-Page Score', sum.onPageScore],
+        ['سرعة (كمبيوتر)', sum.speedDesktop],
+        ['سرعة (جوال)', sum.speedMobile],
+        ['صور >100KB', sum.imgsLarge],
+        ['روابط مكسورة', sum.brokenLinks],
+        ['خريطة موقع', sum.sitemapExists? 'موجود':'غير موجود'],
+        ['عناوين طويلة', sum.titlesLong],
+        ['عناوين قصيرة', sum.titlesShort],
+        ['ميتا طويلة', sum.metaLong],
+        ['ميتا قصيرة', sum.metaShort],
+        ['صور بلا Alt', sum.imgsNoAlt],
+        ['روابط طويلة جدًا', sum.urlsLong],
+        ['عناوين مكرّرة', sum.titlesDup],
+        ['صفحات محظورة', sum.pagesBlocked]
+      ];
+      for(const [k,v] of entries){
+        doc.text(`${k}: ${v}`, 50, y); y+=16;
+        if (y>h-60){ doc.addPage(); y=40; }
+      }
+
+      doc.addPage(); y=40;
+      doc.setFontSize(14); doc.text('أبرز المشاكل وطريقة الحل', 40, y); y+=22; doc.setFontSize(11);
+      const solutions = [
+        ['عنوان طويل', 'اجعل العنوان بين 30–60 حرفًا وضمن الكلمة الأساسية مبكرًا.'],
+        ['عنوان قصير', 'زد الوصف داخل العنوان واجعله فريدًا.'],
+        ['وصف ميتا طويل', 'قلّله إلى 80–160 مع CTA.'],
+        ['وصف ميتا قصير', 'أضف تفاصيل ذات قيمة.'],
+        ['صور بلا Alt', 'أضف alt واضحًا يصف المحتوى والسياق.'],
+        ['روابط مكسورة', 'حدّث الرابط أو أعد التوجيه أو احذفه.'],
+        ['روابط طويلة جدًا', 'بسّط المسارات وتخلّص من المعاملات.'],
+        ['عناوين مكرّرة', 'اجعل لكل صفحة عنوانًا فريدًا.'],
+        ['صفحات محظورة', 'استخدم noindex فقط حيث يلزم، واحترم robots.txt.']
+      ];
+      for(const [p,t] of solutions){
+        doc.text(`- ${p}: ${t}`, 50, y); y+=16;
+        if (y>h-60){ doc.addPage(); y=40; }
+      }
+
+      doc.addPage(); y=40;
+      doc.setFontSize(14); doc.text('عينة صفحات', 40, y); y+=20; doc.setFontSize(10);
+      const sample = state.pages.slice(0, 60);
+      for(const p of sample){
+        const title = (p.title||'').slice(0,70);
+        doc.text(`• ${p.status||''} ${p.blocked?'(blocked)':''} — ${(p.url||'').slice(0,95)}`, 50, y); y+=14;
+        doc.text(`  ${title}`, 60, y); y+=14;
+        if (y>h-60){ doc.addPage(); y=40; }
+      }
+
+      doc.save('seo-report.pdf');
+    }
+  </script>
+</body>
+</html>
