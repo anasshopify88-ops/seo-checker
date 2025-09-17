@@ -77,8 +77,20 @@
     .inline{ display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap}
     .inline > *{ flex:1 }
     .chip{ display:inline-flex; gap:0.35rem; align-items:center; padding:0.35rem 0.6rem; border-radius:999px; background:var(--chip); color:#334155; font-size:0.85rem; margin-inline-end:0.5rem}
-    .progressbar{ height:10px; background:#eef2ff; border:1px solid var(--border); border-radius:999px; overflow:hidden }
-    .progressbar > span{ display:block; height:100%; width:0%; background: linear-gradient(90deg,#22d3ee,#60a5fa,#2563eb)}
+
+    /* شريط التقدّم */
+    .progress-wrap{ display:flex; flex-direction:column; gap:.4rem; }
+    .progressbar{
+      height:12px; background:#eef2ff; border:1px solid var(--border); border-radius:999px; overflow:hidden; position:relative;
+    }
+    .progressbar > span{
+      display:block; height:100%; width:0%;
+      background: linear-gradient(90deg,#22d3ee,#60a5fa,#2563eb)
+    }
+    .progress-meta{
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:.9rem; color:var(--muted);
+    }
     .muted{ color:var(--muted); font-size:0.92rem }
 
     .badge{ display:inline-flex; gap:0.4rem; align-items:center; background:#eef2ff; color:#1f2a44; border:1px solid var(--border); padding:0.35rem 0.6rem; border-radius:999px}
@@ -113,18 +125,13 @@
     .kpi-tail{ display:flex; justify-content:center; gap:0.8rem; margin-top:0.8rem; flex-wrap:wrap;}
     .kpi-tail .kpi{ min-width:220px; flex:0 1 320px; }
 
-    /* تحسين بطاقة حالة الزحف لسطح المكتب */
-    .crawl-card .inline{ align-items:flex-start }
-    @media (min-width: 901px){
-      .crawl-card .inline{
-        display:grid; grid-template-columns: 1fr auto; gap:1rem;
-      }
-      .crawl-card .badge{
-        font-size:1.05rem; padding:.45rem .8rem;
-      }
-      .crawl-card .progressbar{ height:14px; }
-      .crawl-card .muted#status-line{ margin-top:.6rem; }
+    /* تحسين بطاقة حالة الزحف: الصفحات ثم الشريط ثم النص */
+    .crawl-card .stack{ display:flex; flex-direction:column; gap:.6rem; }
+    .crawl-card .badge{
+      font-size:1.05rem; padding:.45rem .8rem; align-self:center;
     }
+    .crawl-card .progressbar{ height:14px; }
+    .crawl-card .muted#status-line{ margin-top:.2rem; text-align:center; }
 
     /* هيدر للجوال */
     @media (max-width:640px){
@@ -180,7 +187,6 @@
         </aside>
 
         <!-- Tool -->
-        
         <section id="toolBox" style="display:flex; flex-direction:column; gap:14px; min-height:0">
           <div class="grid">
             <section class="card">
@@ -192,28 +198,31 @@
                   <button class="btn brand" id="start-btn">ابدأ الفحص</button>
                 </div>
               </div>
-              <div style="margin-top:0.5rem">
-                
-               
-              </div>
+              <div style="margin-top:0.5rem"></div>
             </section>
 
+            <!-- حالة الزحف: الصفحات ثم الشريط ثم النص -->
             <section class="card crawl-card">
-              <div class="inline" style="align-items:flex-start">
-                <div style="flex:2">
-                  <div class="muted">حالة الزحف</div>
-                  <div class="progressbar" aria-label="progress">
-                    <span id="pbar"></span>
-                  </div>
-                </div>
-                <div style="flex:1;text-align:center">
+              <div class="stack">
+                <div style="text-align:center">
                   <div class="badge" title="الصفحات المفحوصة / المتوقع">
                     <span>الصفحات</span>
                     <strong><span id="current-page">0</span>/<span id="total-pages">0</span></strong>
                   </div>
                 </div>
+
+                <div class="progress-wrap">
+                  <div class="progressbar" aria-label="progress" aria-live="polite">
+                    <span id="pbar"></span>
+                  </div>
+                  <div class="progress-meta">
+                    <span id="pcent" aria-label="النسبة">0%</span>
+                    
+                  </div>
+                </div>
+
+                <div class="muted" id="status-line">جاهز للبدء</div>
               </div>
-              <div class="muted" id="status-line" style="margin-top:0.5rem">جاهز للبدء</div>
             </section>
           </div>
 
@@ -312,27 +321,104 @@
     function isValidHttpUrl(value) {
       try { const u = new URL(value); return (u.protocol === 'http:' || u.protocol === 'https:'); } catch { return false; }
     }
-    function setProgress(curr, total){
-      total = Math.max(1, total);
-      setText('current-page', curr);
-      setText('total-pages', total);
-      const p = el('pbar'); if (p) p.style.width = Math.round((curr/total)*100)+'%';
-    }
-    function setWorking(state){
-      const btn = el('start-btn');
-      btn.disabled = state;
-      btn.textContent = state ? 'جاري الفحص…' : 'ابدأ الفحص';
-    }
-    function note(msg){ const n = el('notes'); if (n) n.textContent = msg || ''; }
 
-    function ageLabel(days){
-      if (!days || days <= 0) return '—';
-      const years = Math.floor(days/365);
-      const months = Math.floor((days%365)/30);
-      if (years && months) return `${years} سنة و ${months} شهر`;
-      if (years) return `${years} سنة`;
-      if (months) return `${months} شهر`;
-      return `${days} يوم`;
+    /************ تقدّم مرئي حي (0% → 100%) ************/
+let prog = {
+  t: null,
+  current: 0,
+  softCap: 85,
+  stepMs: 200,
+  easing: 0.12,
+  totalKnown: 0,
+  currKnown: 0,
+  startedAt: 0
+};
+
+function renderProgress(percent){
+  percent = Math.max(0, Math.min(100, percent|0));
+  const bar = el('pbar');
+  if (bar) bar.style.width = percent + '%';
+  setText('pcent', percent + '%');
+}
+
+function setProgress(curr, total){
+  total = Math.max(1, total);
+  setText('current-page', curr);
+  setText('total-pages', total);
+
+  // ✅ بدل ما نكرّر الرسالة الطويلة هنا، نعرض عدّادًا مفيدًا
+  setText('phelper', `تم فحص ${curr} من ${total} صفحة`);
+
+  const exact = Math.round((curr/total)*100);
+  prog.currKnown = curr;
+  prog.totalKnown = total;
+  if (exact > prog.current) {
+    prog.current = exact;
+    renderProgress(prog.current);
+  }
+}
+
+function setWorking(state){
+  const btn = el('start-btn');
+  btn.disabled = state;
+  btn.textContent = state ? 'جاري الفحص…' : 'ابدأ الفحص';
+}
+function note(msg){ const n = el('notes'); if (n) n.textContent = msg || ''; }
+
+function ageLabel(days){
+  if (!days || days <= 0) return '—';
+  const years = Math.floor(days/365);
+  const months = Math.floor((days%365)/30);
+  if (years && months) return `${years} سنة و ${months} شهر`;
+  if (years) return `${years} سنة`;
+  if (months) return `${months} شهر`;
+  return `${days} يوم`;
+}
+
+// ✅ هنا غيّرنا نص phelper حتى لا يكرر نفس الرسالة
+function startFakeProgress(){
+  stopFakeProgress();
+  prog.current = 0;
+  prog.currKnown = 0;
+  prog.totalKnown = 0;
+  prog.startedAt = performance.now();
+  renderProgress(0);
+
+  // كان سابقًا: "يستغرق وقتاً أطول للمواقع الكبيرة…"
+  setText('phelper', 'جاري الزحف…');
+
+  prog.t = setInterval(()=>{
+    let exact = 0;
+    if (prog.totalKnown > 0) exact = Math.round((prog.currKnown / prog.totalKnown) * 100);
+
+    const target = Math.max(exact, prog.softCap);
+    const delta = Math.max(0.6, (target - prog.current) * prog.easing);
+    prog.current = Math.min(target, prog.current + delta);
+    renderProgress(Math.floor(prog.current));
+  }, prog.stepMs);
+}
+
+function finalizeProgress(to=100){
+  stopFakeProgress();
+  const start = prog.current|0;
+  const end = Math.max(start, to);
+  const dur = 500;
+  const t0 = performance.now();
+
+  (function anim(now){
+    const k = Math.min(1, (now - t0)/dur);
+    const eased = start + (end - start) * (0.5 - Math.cos(Math.PI*k)/2);
+    renderProgress(Math.round(eased));
+    if (k < 1) requestAnimationFrame(anim);
+  })(performance.now());
+
+  // ✅ رسالة نهاية مختلفة
+  setText('phelper','اكتمل الفحص');
+}
+
+
+    function stopFakeProgress(){
+      if (prog.t){ clearInterval(prog.t); prog.t = null; }
     }
 
     /************ النقرة الرئيسية ************/
@@ -343,8 +429,12 @@
         return;
       }
 
+      // تهيئة العرض
       el('status-line').textContent = 'يستغرق وقتاً أطول للمواقع الكبيرة…';
-      setProgress(0, MAX_PAGES_FIXED);
+      setText('current-page', 0);
+      setText('total-pages', 0);
+      renderProgress(0);
+      startFakeProgress();
       setWorking(true);
       note('');
 
@@ -366,6 +456,8 @@
           data?.sitemap_info?.discovered_urls_count || 0,
           1
         );
+
+        // تحديث تقدّم (سيقرأه محرك التقدّم الحي تلقائيًا)
         setProgress(Math.min(estimatedTotal, (data.pages?.length || 0)), Math.max(estimatedTotal, 1));
         el('status-line').textContent = 'تحليل النتائج…';
 
@@ -400,8 +492,17 @@
           note('أسباب Spam Risk: ' + Array.from(new Set(allReasons)).join(' • '));
         }
 
+        // إنهاء الشريط إلى 100%
+        finalizeProgress(100);
+
+        // ضبط عدّاد الصفحات النهائي (إن كان تقدير الإجمالي صفر، نعدّل)
+        setProgress(summary.pagesScanned, Math.max(estimatedTotal, summary.pagesScanned, 1));
+
       } catch (e){
         el('status-line').textContent = 'خطأ أثناء الفحص: ' + e.message;
+        setText('phelper','فشل الفحص');
+        stopFakeProgress();
+        renderProgress(0);
       } finally {
         setWorking(false);
       }
