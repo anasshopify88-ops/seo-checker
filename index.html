@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>فحص المتجر عبر الزحف — تقرير SEO شامل</title>
+  <title>أداة فحص سيو المتجر الإلكتروني من أنس راشد</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Fonts -->
@@ -39,6 +39,7 @@
       max-width:1100px; margin:auto; display:flex; align-items:center; justify-content:space-between; padding:0.8rem 1rem;
     }
     .nav .left, .nav .right{display:flex; gap:0.6rem; align-items:center}
+    .title h1.nav-h1{margin:0; font-size:1.1rem; line-height:1.4; font-weight:800}
     .btn{appearance:none; border:none; cursor:pointer; border-radius:10px; padding:0.6rem 0.95rem; font-weight:700}
     .btn.brand{ background: linear-gradient(90deg,var(--brand),var(--brand-2)); color:#ffffff }
     .btn.ghost{ background:#eef2ff; color:var(--fg); border:1px solid var(--border)}
@@ -128,6 +129,22 @@
     .kpi-name{ font-weight:700; font-size:0.95rem; line-height:1.3; min-height:2.4em }
     .kpi-val{ font-size:1.4rem; font-weight:800; margin-top:0.25rem; color:#111827 }
     .kpi small{ color:var(--muted); font-size:0.8rem }
+
+    /* ====== ترتيب الهيدر على الجوال: عنوان ← شعار ← أزرار ====== */
+    @media (max-width:640px){
+      .nav{
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-start;
+        gap:.5rem;
+        padding:.6rem 1rem;
+      }
+      .nav .title{ order:1; text-align:center; width:100%; }
+      .nav .right{ order:2; }
+      .nav .left{ order:3; justify-content:center; width:100%; }
+      .nav .right .logo{ max-width:140px; }
+      .title h1.nav-h1{ font-size:1.05rem; }
+    }
   </style>
 </head>
 <body>
@@ -137,8 +154,11 @@
         <button class="btn ghost" id="btn-back">رجوع</button>
         <a class="btn link" href="https://anasrashed.com" id="btn-home">الرئيسية</a>
       </div>
+      <div class="title" aria-label="عنوان الصفحة">
+        <h1 id="page-h1" class="nav-h1">أداة فحص سيو المتجر الإلكتروني من أنس راشد</h1>
+      </div>
       <div class="right">
-        <!-- نقل الشعار هنا بنفس حجمه، وحذف النص -->
+        <!-- الشعار -->
         <img class="logo" src="https://i.imgur.com/meUEoP7.png" alt="الشعار"
              onerror="this.onerror=null; this.src='https://i.imgur.com/meUEoP7.jpg';">
       </div>
@@ -147,8 +167,6 @@
 
   <main>
     <div class="container">
-      <!-- تم حذف العنوان والنص أعلى الأداة سابقًا -->
-
       <!-- تخطيط: سايدبار يسار + الأداة يمين -->
       <div class="layout" style="margin-top:12px">
         <!-- سايدبار بنفس تصميم الكود السابق -->
@@ -165,11 +183,9 @@
               <div class="s-item"><a href="https://serp.anasrashed.com" target="_blank" rel="noopener">أداة SERP بالذكاء الإصطناعي</a></div>
               <div class="s-item"><a href="https://smg.anasrashed.com" target="_blank" rel="noopener">أداة منشئ خريطة الموقع</a></div>
               <div class="s-item"><a href="https://anasrashed.com/blog" target="_blank" rel="noopener">تعلم أكثر</a></div>
-                            <div class="s-item"><a href="https://anasrashed.com/%D8%AA%D9%88%D8%AB%D9%8A%D9%82-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%84%D9%83%D8%AA%D8%B1%D9%88%D9%86%D9%8A%D8%A9/page-1494027497" target="_blank" rel="noopener">توثيق التجارة الإلكترونية</a></div>
-              <div class="s-item"><a
-                                     href="https://contact.anasrashed.com" target="_blank" rel="noopener">تواصل معي</a></div>
+              <div class="s-item"><a href="https://contact.anasrashed.com" target="_blank" rel="noopener">تواصل معي</a></div>
+              <div class="s-item"><a href="https://anasrashed.com/%D8%AA%D9%88%D8%AB%D9%8A%D9%82-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%84%D9%83%D8%AA%D8%B1%D9%88%D9%86%D9%8A%D8%A9/page-1494027497" target="_blank" rel="noopener">توثيق التجارة الإلكترونية</a></div>
             </div>
-            <!-- تم حذف الشعار من تحت الروابط حسب طلبك -->
           </div>
         </aside>
 
