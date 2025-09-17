@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>أداة فحص سيو المتجر الإلكتروني من أنس راشد</title>
+  <title>أداة فحص سيو المتجر الإلكتروني من أنس راشد — نسخة دقيقة</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Fonts -->
@@ -109,10 +109,7 @@
 
     /* هيدر للجوال */
     @media (max-width:640px){
-      .nav{
-        flex-direction:column; align-items:center; justify-content:flex-start;
-        gap:.5rem; padding:.6rem 1rem;
-      }
+      .nav{ flex-direction:column; align-items:center; justify-content:flex-start; gap:.5rem; padding:.6rem 1rem; }
       .nav .title{ order:1; text-align:center; width:100%; }
       .nav .right{ order:2; }
       .nav .left{ order:3; justify-content:center; width:100%; }
@@ -170,7 +167,7 @@
 
               <div style="margin-top:0.5rem">
                 <button class="btn brand" id="start-btn">ابدأ الفحص</button>
-                <span class="chip">يفحص حتى 2000 صفحة</span>
+                <span class="chip">يفحص حتى 2000 صفحة (دقّة عالية)</span>
               </div>
             </section>
 
@@ -322,12 +319,12 @@
                 <div class="kpi-name">عدد الصفحات المفحوصة</div>
                 <div class="kpi-val" id="scanned-count-tile">0</div>
               </div>
-              <!-- 16: Smap Score -->
+              <!-- 16: Sitemap Score -->
               <div class="kpi">
                 <div class="kpi-ico">
                   <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="1.6"/><path d="M7 13l3 3 7-7" stroke="#0ea5e9" stroke-width="1.8"/></svg>
                 </div>
-                <div class="kpi-name">Smap Score</div>
+                <div class="kpi-name">Sitemap Score</div>
                 <div class="kpi-val" id="smap-score">0</div>
               </div>
               <!-- 17: عمر النطاق -->
@@ -337,6 +334,14 @@
                 </div>
                 <div class="kpi-name">عمر النطاق</div>
                 <div class="kpi-val" id="domain-age">—</div>
+              </div>
+              <!-- 18: Spam Risk -->
+              <div class="kpi">
+                <div class="kpi-ico">
+                  <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#fee2e2" stroke="#ef4444"/><path d="M8 12h8M12 8v8" stroke="#ef4444" stroke-width="1.6"/></svg>
+                </div>
+                <div class="kpi-name">Spam Risk (0–100)</div>
+                <div class="kpi-val" id="spam-risk">0</div>
               </div>
             </div>
           </section>
@@ -364,7 +369,7 @@
   <script>
     /************ إعدادات عامة ************/
     const WORKER_BASE = 'https://seo-checker.anasshopify88.workers.dev';
-    const PAYMENT_LINK = 'https://<رابط-شراء-سلة-النهائي>';
+    const PAYMENT_LINK = '#';
     const RETURN_PARAM = 'paid';
     const RETURN_VALUE = '1';
 
@@ -423,6 +428,7 @@
       }
 
       el('status-line').textContent = 'بدء الزحف…';
+      // تقدير أولي لعدد الصفحات: نجهل العدد قبل الزحف؛ نعرض الحد الأقصى لشفافية التقدّم
       setProgress(0, MAX_PAGES_FIXED);
       setWorking(true);
       note('');
@@ -438,19 +444,20 @@
         if (!resp.ok) throw new Error('فشل الاتصال بالزاحف');
         const data = await resp.json();
 
-        // تقدّم شكلي
-        setProgress(Math.min(MAX_PAGES_FIXED, (data.pages?.length || 0)), MAX_PAGES_FIXED);
+        // تحديث تقدّم نهائي + ضبط إجمالي الصفحات بناءً على sitemap إن وُجد
+        const estimatedTotal = Math.min(MAX_PAGES_FIXED, data?.sitemap_info?.discovered_urls_count || data?.pages?.length || MAX_PAGES_FIXED);
+        setProgress(Math.min(estimatedTotal, (data.pages?.length || 0)), estimatedTotal);
         el('status-line').textContent = 'تحليل النتائج…';
 
         const summary = computeSummary(data);
         const t1 = performance.now();
 
-        // PageSpeed + Domain Age
+        // PageSpeed + Domain Age + SpamRisk من السيرفر (PSI يتم داخل /metrics)
         const metricsURL = new URL('/metrics', WORKER_BASE);
         const domain = new URL(data.origin).hostname;
         metricsURL.searchParams.set('domain', domain);
 
-        let metrics = { psi_mobile:null, psi_desktop:null, domain_age_days:null };
+        let metrics = { psi_mobile:null, psi_desktop:null, domain_age_days:null, spam_risk:null, spam_reasons:[] };
         try {
           const mx = await fetch(metricsURL, { method:'GET' });
           if (mx.ok) metrics = await mx.json();
@@ -466,6 +473,13 @@
         window.__CRAWL_DATA__ = data;
         window.__SUMMARY__ = summary;
         window.__METRICS__ = metrics;
+
+        const allReasons = []
+          .concat(data.spam_reasons_partial || [])
+          .concat(metrics.spam_reasons || []);
+        if (allReasons.length){
+          note('أسباب Spam Risk: ' + Array.from(new Set(allReasons)).join(' • '));
+        }
 
       } catch (e){
         el('status-line').textContent = 'خطأ أثناء الفحص: ' + e.message;
@@ -586,6 +600,7 @@
       setText('sitemap', s.sitemapExists ? 1 : 0);
       setText('smap-score', s.smapScore || 0);
       setText('domain-age', ageLabel(metrics.domain_age_days || 0));
+      setText('spam-risk', Math.round(metrics.spam_risk ?? 0));
 
       // عدّادات
       setText('imgs-large', s.imgsLarge);
@@ -633,7 +648,8 @@
         ['ON-PAGE', summary.onPageScore],
         ['سرعة (كمبيوتر)', metrics.psi_desktop ?? summary.speedDesktop],
         ['سرعة (جوال)',   metrics.psi_mobile  ?? summary.speedMobile],
-        ['Smap Score', summary.smapScore],
+        ['Sitemap Score', summary.smapScore],
+        ['Spam Risk', Math.round(metrics.spam_risk ?? 0)],
         ['سitemap', summary.sitemapExists? 'موجود':'غير موجود'],
         ['صور >100KB', summary.imgsLarge],
         ['روابط مكسورة', summary.brokenLinks],
