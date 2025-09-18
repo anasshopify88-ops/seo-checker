@@ -539,10 +539,21 @@
         window.__SUMMARY__ = summary;
         window.__METRICS__ = metrics;
 
-        const allReasons = []
+        // ✅ إزالة سبب "عمر نطاق حديث" من الأسباب، وعدم عرض العنوان إن لم يتبق شيء
+        const rawReasons = []
           .concat(data.spam_reasons_partial || [])
           .concat(metrics.spam_reasons || []);
-        if (allReasons.length){ note('أسباب Spam Risk: ' + Array.from(new Set(allReasons)).join(' • ')); }
+        const BLOCKED = ['عمر نطاق حديث','عمر النطاق حديث','الدومين جديد','الدومين حديث'];
+        const cleaned = Array.from(new Set(
+          rawReasons
+            .map(r => (r||'').toString().trim())
+            .filter(r => r.length && !BLOCKED.some(b => r.includes(b)))
+        ));
+        if (cleaned.length){
+          note('أسباب Spam Risk: ' + cleaned.join(' • '));
+        } else {
+          note(''); // لا نعرض أي عبارة
+        }
 
         finalizeProgress(100);
         setProgress(summary.pagesScanned, Math.max(estimatedTotal, summary.pagesScanned, 1));
@@ -726,7 +737,10 @@
       // لا نستخدم ✅ للصفر هنا بعد الآن
       displayVal('smap-score', s.smapScore || 0);
       setText('domain-age', ageLabel(metrics.domain_age_days || 0));
-      displayVal('spam-risk', Math.round(metrics.spam_risk ?? 0));
+
+      // ✅ عرض Spam Risk بشكل مضمون + تقييمه اللوني
+      const spamVal = Math.max(0, Math.min(100, Math.round(Number(metrics.spam_risk ?? 0))));
+      displayVal('spam-risk', spamVal);
 
       displayVal('imgs-large', s.imgsLarge);
       displayVal('broken-links', s.brokenLinks);
@@ -755,6 +769,9 @@
       setSeverity('sev-urls-long', ...sevForCountGeneric(s.urlsLong));
       setSeverity('sev-titles-dup', ...sevForCountGeneric(s.titlesDup));
       setSeverity('sev-pages-blocked', ...sevForPagesBlocked(s.pagesBlocked));
+
+      // ✅ الجديد: تقييم لون/وسم بطاقة Spam Risk
+      setSeverity('sev-spam-risk', ...sevForSpamRisk(spamVal));
 
       // ❌ إلغاء "تقييم" عمر الدومين (لا نُسند أي شدة له)
       // setSeverity('sev-domain-age', ...sevForDomainAge(Number(metrics.domain_age_days||0)));
@@ -793,7 +810,7 @@
         ['سرعة (جوال)',   metrics.psi_mobile  ?? summary.speedMobile],
         ['Sitemap', summary.sitemapExists ? '✅' : '❌'],
         ['Sitemap Score', summary.smapScore],
-        ['Spam Risk', Math.round(metrics.spam_risk ?? 0)],
+        ['Spam Risk', Math.max(0, Math.min(100, Math.round(Number(metrics.spam_risk ?? 0)) ))],
 
         ['صور >100KB', summary.imgsLarge],
         ['روابط مكسورة', summary.brokenLinks],
