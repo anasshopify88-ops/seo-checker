@@ -1,860 +1,174 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>أداة فحص سيو الموقع الإلكتروني من أنس راشد</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
+<title>أداة فحص سيو الموقع الإلكتروني من أنس راشد</title>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#f7f8fb; --card:#ffffff; --card-2:#f9fbff;
-      --fg:#0c1424; --muted:#5b6472;
-      --brand:#2563eb; --brand-2:#22d3ee;
-      --ok:#15803d; --warn:#d97706; --danger:#dc2626;
-      --border:#e6e9f2; --chip:#eef2ff;
-      --sidebar-w:280px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:'Cairo',system-ui,Arial;
-      background:linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
-      color:var(--fg); display:flex; flex-direction:column;
-    }
-    header{
-      position:sticky; top:0; z-index:50;
-      background:rgba(255,255,255,0.9);
-      backdrop-filter:saturate(140%) blur(8px);
-      border-bottom:1px solid var(--border);
-    }
-    .nav{
-      max-width:1100px; margin:auto; display:flex; align-items:center; justify-content:space-between; padding:0.8rem 1rem;
-    }
-    .nav .left, .nav .right{display:flex; gap:0.6rem; align-items:center}
-    .title h1.nav-h1{margin:0; font-size:1.1rem; line-height:1.4; font-weight:800}
-    .btn{appearance:none; border:none; cursor:pointer; border-radius:10px; padding:0.6rem 0.95rem; font-weight:700}
-    .btn.brand{ background: linear-gradient(90deg,var(--brand),var(--brand-2)); color:#ffffff }
-    .btn.ghost{ background:#eef2ff; color:var(--fg); border:1px solid var(--border)}
-    .btn.link{ background:#ffffff; color:#0f172a; text-decoration:none; border:1px solid var(--border)}
-    .btn:disabled{ opacity:0.6; cursor:not-allowed }
-    main{ flex:1; }
-    .container{ max-width:1100px; margin: 1rem auto 2rem; padding: 0 1rem; }
+<style>
+  :root{
+    --bg:#f7f8fb; --bg-2:#f1f5fb; --card:#ffffff; --text:#0c1424; --muted:#5b6472; --accent:#2563eb;
+    --ok:#15803d; --warn:#d97706; --error:#dc2626; --border:#e6e9f2; --shadow:0 6px 16px rgba(0,0,0,.08);
+    --radius:16px; --radius-sm:12px;
+    --sidebar-w:280px;
+    --fs-base:13px; --fs-sm:11.5px;
+  }
 
-    .layout{ display:grid; grid-template-columns: var(--sidebar-w) 1fr; gap:14px; align-items:start; }
-    @media (max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:"Cairo",system-ui,Arial,Helvetica,sans-serif; line-height:1.65;
+    background:linear-gradient(180deg,var(--bg),var(--bg-2)); color:var(--text);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden; font-size:var(--fs-base);
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:24px 16px 64px}
 
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1rem; box-shadow:0 10px 30px rgba(2,8,23,0.06) }
+  .topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .btn{
+    border:1px solid var(--border); background:linear-gradient(180deg,#fff,#f9fbff);
+    color:var(--text); padding:8px 12px; border-radius:14px; cursor:pointer; font-weight:700; box-shadow:var(--shadow);
+    transition:transform .18s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+    font-size:12px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{transform:translateY(-2px); border-color:#cbd5e1}
+  .btn.home{background:#000; color:#fff; border-color:#000}
+  
+  .btn.contactTop{
+    background: var(--accent);
+    border-color: var(--accent);
+    color:#fff;
+    justify-content:center;
+  }
+  .btn.contactTop:hover{ background: var(--accent); border-color: var(--accent); color:#fff; }
 
-    #sidePanel{ display:flex; height:100%; min-height:0; overflow:hidden; }
-    @media (min-width:981px){ #sidePanel{ contain:size; } }
-    .sidebar-card{ flex:1 1 auto; height:100%; display:flex; flex-direction:column; gap:8px; min-height:0; overflow:auto; }
-    .avatar{ width:96px; height:96px; border-radius:50%; background:#fff; padding:6px; object-fit:contain; object-position:center; border:1px solid var(--border); align-self:center }
-    .logo{ width:100%; max-width:160px; align-self:center; object-fit:contain; object-position:center; background:#fff; border-radius:12px; border:1px solid var(--border); padding:8px }
-    .s-list{ display:grid; gap:6px }
-    .s-item a{
-      display:block; padding:7px 9px; border:1px solid var(--border); border-radius:12px; background:#fff;
-      color:#0f172a; text-decoration:none; font-weight:600; transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease;
-      box-shadow:0 4px 12px rgba(15,23,42,.05); font-size:12.5px;
-    }
-    .s-item a:hover{ transform:translateY(-2px); border-color:#cbd5e1; box-shadow:0 8px 18px rgba(15,23,42,.08) }
-    .s-caption{ color:var(--muted); font-size:11px; margin-top:-2px; align-self:center }
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow)}
+  .titleRow{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  h1{margin:0;font-size:clamp(18px,2.2vw,24px);font-weight:800;letter-spacing:.2px}
+  .sub{margin-top:6px;color:var(--muted);font-size:var(--fs-sm)}
+  .logo{width:100%; max-width:180px; align-self:center; object-fit:contain; object-position:center; background:#fff; border-radius:12px; border:1px solid var(--border); padding:8px}
+  .title-logo{width:180px; max-width:180px; align-self:center}
 
-    .grid{ display:grid; grid-template-columns:1.2fr 0.8fr; gap:1rem; }
-    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
+  /* التخطيط العام */
+  .layout{
+    display:grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    gap:14px;
+    align-items:stretch; /* يضمن تساوي الارتفاع */
+    margin-top:12px;
+  }
 
-    /* حقول الإدخال */
-    input[type="text"]{
-      width:100%; padding:0.85rem 0.9rem; border-radius:12px; background:#ffffff; color:#000;
-      border:1px solid var(--border); outline:none; font-size:1rem;
-      overflow:hidden; text-overflow:ellipsis; direction:ltr;
-      box-shadow:0 6px 20px rgba(2,8,23,0.04);
-    }
-    .inline{ display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap}
-    .inline > *{ flex:1 }
-    .chip{ display:inline-flex; gap:0.35rem; align-items:center; padding:0.35rem 0.6rem; border-radius:999px; background:var(--chip); color:#334155; font-size:0.85rem; margin-inline-end:0.5rem}
+  /* السايدبار */
+  #sidePanel{
+    display:block; 
+    height:auto; 
+    min-height:0; 
+    overflow:visible;
+  }
+  
+  .sidebar-card{
+    height:100%; 
+    display:flex; flex-direction:column; gap:10px; 
+    overflow:visible;
+  }
 
-    /* شريط التقدّم */
-    .progress-wrap{ display:flex; flex-direction:column; gap:.4rem; }
-    .progressbar{
-      height:12px; background:#eef2ff; border:1px solid var(--border); border-radius:999px; overflow:hidden; position:relative;
-    }
-    .progressbar > span{
-      display:block; height:100%; width:0%;
-      background: linear-gradient(90deg,#22d3ee,#60a5fa,#2563eb)
-    }
-    .progress-meta{
-      display:flex; justify-content:space-between; align-items:center;
-      font-size:.9rem; color:var(--muted);
-    }
-    .muted{ color:var(--muted); font-size:0.92rem }
+  .avatar{width:112px;height:112px;border-radius:50%;background:#fff;padding:6px;object-fit:contain;object-position:center;border:1px solid var(--border);align-self:center}
+  .s-list{display:grid; gap:8px}
+  .s-item a, .s-text{
+    display:block; padding:8px 10px; border:1px solid var(--border); border-radius:12px; background:#fff;
+    color:#0f172a; text-decoration:none; font-weight:600; transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+    box-shadow:0 4px 12px rgba(15,23,42,.05); font-size:13px;
+  }
+  .s-item a:hover{transform:translateY(-2px); border-color:#cbd5e1; box-shadow:0 8px 18px rgba(15,23,42,.08)}
 
-    .badge{ display:inline-flex; gap:0.4rem; align-items:center; background:#eef2ff; color:#1f2a44; border:1px solid var(--border); padding:0.35rem 0.6rem; border-radius:999px}
+  /* يمين: منطقة الرسالة */
+  #toolBox{display:block; height: 100%; min-height:0}
 
-    .cta{ background:var(--card-2); border:1px dashed #c7d2fe; border-radius:14px; padding:1rem; }
-    .pdf-button{ background:#0ea5e9; color:#ffffff }
+  /* زر الانتقال الكبير */
+  a.btn.primary {background:var(--accent);border-color:var(--accent);color:#fff}
 
-    .hide{ display:none }
-    .footer-note{ color:var(--muted); font-size:0.85rem; margin-top:0.6rem }
-
-    /* KPI grid */
-    .kpi-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:0.8rem; }
-    @media (max-width: 900px){ .kpi-grid{ grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 520px){ .kpi-grid{ grid-template-columns: 1fr; } }
-    .kpi{
-      display:flex; flex-direction:column; align-items:center; text-align:center;
-      border:1px solid var(--border); border-radius:14px; padding:0.9rem; background:#fff;
-      box-shadow:0 8px 22px rgba(2,8,23,0.05);
-      min-height: 170px;
-    }
-    .kpi-ico{
-      width:56px; height:56px; border-radius:14px;
-      display:grid; place-items:center; margin-bottom:0.5rem;
-      box-shadow:0 10px 20px rgba(2,8,23,0.06);
-      background: radial-gradient(100% 100% at 30% 30%, #e0f2fe 0%, #dbeafe 45%, #e9d5ff 100%);
-    }
-    .kpi-ico svg{ width:28px; height:28px }
-    .kpi-name{ font-weight:700; font-size:0.95rem; line-height:1.3; min-height:2.4em }
-    .kpi-sev{
-      margin-top:4px; font-size:.82rem; font-weight:700; padding:2px 8px; border-radius:999px;
-      border:1px solid var(--border); background:#f8fafc; color:#334155;
-    }
-    .sev-excellent{ background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
-    .sev-good{ background:#eef2ff; color:#3730a3; border-color:#c7d2fe; }
-    .sev-normal{ background:#f1f5f9; color:#0f172a; border-color:#e2e8f0; }
-    .sev-medium{ background:#fffbeb; color:#92400e; border-color:#fde68a; }
-    .sev-weak{ background:#fef3f2; color:#9a3412; border-color:#fecaca; }
-    .sev-danger{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
-
-    .kpi-val{ font-size:1.4rem; font-weight:800; margin-top:0.25rem; color:#111827 }
-
-    /* صف ذي خانتين في المنتصف */
-    .kpi-tail{ display:flex; justify-content:center; gap:0.8rem; margin-top:0.8rem; flex-wrap:wrap;}
-    .kpi-tail .kpi{ min-width:220px; flex:0 1 320px; }
-
-    /* تحسين بطاقة حالة الزحف: الصفحات ثم الشريط ثم النص */
-    .crawl-card .stack{ display:flex; flex-direction:column; gap:.6rem; }
-    .crawl-card .badge{
-      font-size:1.05rem; padding:.45rem .8rem; align-self:center;
-    }
-    .crawl-card .progressbar{ height:14px; }
-    .crawl-card .muted#status-line{ margin-top:.2rem; text-align:center; }
-
-    /* إخفاء تقييم عمر النطاق فقط (المطلوب) */
-    #sev-domain-age{ display:none; }
-
-    /* هيدر للجوال */
-    @media (max-width:640px){
-      .nav{ flex-direction:column; align-items:center; justify-content:flex-start; gap:.5rem; padding:.6rem 1rem; }
-      .nav .title{ order:1; text-align:center; width:100%; }
-      .nav .right{ order:2; }
-      .nav .left{ order:3; justify-content:center; width:100%; }
-      .nav .right .logo{ max-width:140px; }
-      .title h1.nav-h1{ font-size:1.05rem; }
-      .grid .card:first-child{ padding-bottom:1.2rem; }
-      #start-btn{ width:100%; }
-    }
-  </style>
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    .avatar{width:104px;height:104px}
+  }
+</style>
 </head>
+
 <body>
-  <header>
-    <div class="nav">
-      <div class="left">
-        <button class="btn ghost" id="btn-back">رجوع</button>
-        <a class="btn link" href="https://anasrashed.com" id="btn-home">الرئيسية</a>
-      </div>
-      <div class="title" aria-label="عنوان الصفحة">
-<h1 id="page-h1" class="nav-h1">أداة فحص سيو المتجر الإلكتروني من أنس راشد <span style="color:#dc2626;">(تجريبي)</span></h1>
-      </div>
-      <div class="right">
-        <img class="logo" src="https://i.imgur.com/meUEoP7.png" alt="الشعار"
+  <div class="wrap" id="app">
+    <div class="topbar">
+      <button class="btn" id="backBtn" onclick="history.back()">رجوع</button>
+      <a class="btn home" id="homeBtn" href="https://anasrashed.com" rel="noopener">الرئيسية</a>
+      <a class="btn contactTop" id="contactTopBtn" href="https://contact.anasrashed.com" target="_blank" rel="noopener">تواصل معي</a>
+    </div>
+
+    <div class="card">
+      <div class="titleRow">
+        <div>
+          <h1>أداة فحص سيو المتجر الإلكتروني من أنس راشد <span </span></h1>
+          <div class="sub">
+            فحص شامل للعناوين، الميتا، السرعة، الروابط المكسورة، ومشاكل الأرشفة.
+          </div>
+        </div>
+        <img class="logo title-logo" src="https://i.imgur.com/meUEoP7.png" alt="الشعار"
              onerror="this.onerror=null; this.src='https://i.imgur.com/meUEoP7.jpg';">
       </div>
     </div>
-  </header>
 
-  <main>
-    <div class="container">
-      <div class="layout" style="margin-top:12px">
-        <!-- Sidebar -->
-        <aside id="sidePanel">
-          <div class="card sidebar-card">
-            <img class="avatar" src="https://i.imgur.com/B3UkEQ0.jpg" alt="صورتي" referrerpolicy="no-referrer"
-                 onerror="this.onerror=null; this.src='https://i.imgur.com/B3UkEQ0.png';">
-            <div class="s-list">
-              <div class="s-item"><a href="https://whoami.anasrashed.com" target="_blank" rel="noopener">من أنا؟</a></div>
-              <div class="s-item"><a href="https://anasrashed.com/wAXpVym" target="_blank" rel="noopener">دليل السيو الشامل</a></div>
-              <div class="s-item"><a href="https://anasrashed.com/eQvbbqP" target="_blank" rel="noopener">أفضل باك لينك</a></div>
-              <div class="s-item"><a href="https://anasrashed.com/NApDQYD" target="_blank" rel="noopener">حملة باك لينك شهرية</a></div>
-              <div class="s-item"><a href="https://anasrashed.com/ZqyGaBZ" target="_blank" rel="noopener">حل مشكلة خريطة الموقع للباقة بلس</a></div>
-              <div class="s-item"><a href="https://serp.anasrashed.com" target="_blank" rel="noopener">أداة SERP بالذكاء الإصطناعي</a></div>
-              <div class="s-item"><a href="https://smg.anasrashed.com" target="_blank" rel="noopener">أداة منشئ خريطة الموقع</a></div>
-              <div class="s-item"><a href="https://anasrashed.com/blog" target="_blank" rel="noopener">تعلم أكثر</a></div>
-              <div class="s-item"><a href="https://anasrashed.com/%D8%AA%D9%88%D8%AB%D9%8A%D9%82-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%A5%D9%84%D9%83%D8%AA%D8%B1%D9%88%D9%86%D9%8A%D8%A9/page-1494027497" target="_blank" rel="noopener">توثيق التجارة الإلكترونية</a></div>
-              <div class="s-item"><a href="https://contact.anasrashed.com" target="_blank" rel="noopener">تواصل معي</a></div>
-            </div>
+    <div class="layout">
+
+      <!-- السايدبار (يمين) -->
+      <aside id="sidePanel">
+        <div class="card sidebar-card">
+          <img class="avatar" src="https://i.imgur.com/B3UkEQ0.jpg" alt="صورتي" referrerpolicy="no-referrer"
+               onerror="this.onerror=null; this.src='https://i.imgur.com/B3UkEQ0.png';">
+
+          <div class="s-list">
+            <div class="s-item"><a href="https://whoami.anasrashed.com" target="_blank" rel="noopener">من أنا؟</a></div>
+            <div class="s-item"><a href="https://anasrashed.gumroad.com/l/seo-book-for-ecommerce" target="_blank" rel="noopener">كتاب دليل السيو الشامل</a></div>
+            <div class="s-item"><a href="https://blog.anasrashed.com" target="_blank" rel="noopener">المدونة</a></div>
+
+            <div class="sub" style="text-align:center; font-size:18px; margin-top:10px;"><b>خدماتي</b></div>
+            <div class="s-item"><span class="s-text">تحسين داخلي</span></div>
+            <div class="s-item"><span class="s-text">تحسين خارجي</span></div>
+            <div class="s-item"><span class="s-text">استخراج الكلمات المفتاحية للمنافسين</span></div>
+            <div class="s-item"><span class="s-text">تفعيل خريطة الموقع للباقة بلس</span></div>
+
+            <div class="sub" style="text-align:center; font-size:18px; margin-top:10px;"><b>أدوات سيو احترافية</b></div>
+            <div class="s-item"><a href="https://serp.anasrashed.com" target="_blank" rel="noopener">أداة SERP بالذكاء الإصطناعي</a></div>
+            <div class="s-item"><a href="https://writer.anasrashed.com" target="_blank" rel="noopener">أداة كتابة مقالات بالذكاء الإصطناعي</a></div>
+            <div class="s-item"><a href="https://smg.anasrashed.com" target="_blank" rel="noopener">أداة منشئ خريطة الموقع</a></div>
+            <div class="s-item"><a href="https://keywords.anasrashed.com" target="_blank" rel="noopener">أداة الكلمات المفتاحية</a></div>
+            <div class="s-item"><a href="https://checker.anasrashed.com" target="_blank" rel="noopener">أداة فحص الموقع</a></div>
+
+            <!-- ✅ إضافة الأداة للقائمة -->
+            <div class="s-item"><a href="https://tinyimage.anasrashed.com" target="_blank" rel="noopener">تحويل الصور الى WebP</a></div>
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        <!-- Tool -->
-        <section id="toolBox" style="display:flex; flex-direction:column; gap:14px; min-height:0">
-          <div class="grid">
-            <section class="card">
-              <input type="text" id="store-url" placeholder="https://example.com" aria-label="أدخل رابط المتجر">
+      <!-- رسالة الانتقال -->
+      <section id="toolBox">
+        <div class="card" style="text-align:center; padding:60px 20px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:24px; min-height:400px; height:100%;">
+            
+            <div style="font-size:48px;">🚀</div>
 
-              <div class="inline" style="margin-top:.6rem">
-                <div style="align-self:flex-end;">
-                  <button class="btn brand" id="start-btn">ابدأ الفحص</button>
-                </div>
-              </div>
-              <div style="margin-top:0.5rem"></div>
-            </section>
+            <h2 style="margin:0; font-size:clamp(20px, 4vw, 28px); color:var(--text); line-height:1.4;">
+                تم الإنتقال الى منصة أدوات أنس راشد
+            </h2>
+            
+            <a href="https://tools.anasrashed.com" class="btn primary" style="font-size:16px; padding:12px 24px; text-decoration:none; display:inline-block;">
+                انتقل الى المنصة
+            </a>
 
-            <!-- حالة الزحف -->
-            <section class="card crawl-card">
-              <div class="stack">
-                <div style="text-align:center">
-                  <div class="badge" title="الصفحات المفحوصة / المتوقع">
-                    <span>الصفحات</span>
-                    <strong><span id="current-page">0</span>/<span id="total-pages">0</span></strong>
-                  </div>
-                </div>
+        </div>
+      </section>
 
-                <div class="progress-wrap">
-                  <div class="progressbar" aria-label="progress" aria-live="polite">
-                    <span id="pbar"></span>
-                  </div>
-                  <div class="progress-meta">
-                    <span id="pcent" aria-label="النسبة">0%</span>
-                    <span id="phelper" class="muted"></span>
-                  </div>
-                </div>
-
-                <div class="muted" id="status-line">جاهز للبدء</div>
-              </div>
-            </section>
-          </div>
-
-          <!-- KPI overview -->
-          <section class="card" id="overview-card">
-            <div class="inline" style="margin:.3rem 0 .8rem">
-              <span class="badge">تم فحص <strong id="scanned-count">0</strong> صفحة</span>
-              <span class="badge">الزمن: <strong id="exec-time">0</strong> ث</span>
-              <span class="badge">النطاق: <strong id="summary-origin">—</strong></span>
-            </div>
-
-            <!-- ترتيب احترافي جديد -->
-            <div class="kpi-grid">
-              <!-- 1) ON-PAGE SCORE -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l3.09 6.26L22 10.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 15.15l-5-4.88 6.91-1.01L12 3z" stroke="#2563eb" stroke-width="1.4" fill="#93c5fd"/></svg></div>
-                <div class="kpi-name">ON-PAGE SEO Score</div>
-                <div class="kpi-sev" id="sev-o-score">—</div>
-                <div class="kpi-val" id="o-score">0</div>
-              </div>
-
-              <!-- 2) سرعة (جوال) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="7" y="2" width="10" height="20" rx="2" stroke="#22c55e" stroke-width="1.4" fill="#bbf7d0"/><circle cx="12" cy="18" r="1" fill="#16a34a"/></svg></div>
-                <div class="kpi-name">سرعة الموقع (جوال)</div>
-                <div class="kpi-sev" id="sev-speed-mobile">—</div>
-                <div class="kpi-val" id="speed-mobile">0</div>
-              </div>
-
-              <!-- 3) سرعة (كمبيوتر) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="2" stroke="#0ea5e9" stroke-width="1.4" fill="#bae6fd"/><rect x="9" y="18" width="6" height="2" rx="1" fill="#0ea5e9"/></svg></div>
-                <div class="kpi-name">سرعة الموقع (كمبيوتر)</div>
-                <div class="kpi-sev" id="sev-speed-desktop">—</div>
-                <div class="kpi-val" id="speed-desktop">0</div>
-              </div>
-
-              <!-- 4) خريطة موقع -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="6" rx="2" fill="#e9d5ff" stroke="#8b5cf6"/><path d="M12 10v4M12 14h-6M12 14h6M6 18h12" stroke="#8b5cf6" stroke-width="1.4"/></svg></div>
-                <div class="kpi-name">خريطة موقع</div>
-                <div class="kpi-sev" id="sev-sitemap">—</div>
-                <div class="kpi-val" id="sitemap">—</div>
-              </div>
-
-              <!-- 5) Sitemap Score -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="1.6"/><path d="M7 13l3 3 7-7" stroke="#0ea5e9" stroke-width="1.8"/></svg></div>
-                <div class="kpi-name">Sitemap Score</div>
-                <div class="kpi-sev" id="sev-smap-score">—</div>
-                <div class="kpi-val" id="smap-score">0</div>
-              </div>
-
-              <!-- 6) عناوين مكرّرة -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="6" width="10" height="12" rx="2" fill="#ddd6fe" stroke="#7c3aed"/><rect x="9" y="4" width="10" height="12" rx="2" fill="#ede9fe" stroke="#7c3aed"/></svg></div>
-                <div class="kpi-name">عناوين مكرّرة</div>
-                <div class="kpi-sev" id="sev-titles-dup">—</div>
-                <div class="kpi-val" id="titles-dup">0</div>
-              </div>
-
-              <!-- 7) عناوين طويلة (>60) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M12 6v12" stroke="#2563eb" stroke-width="1.6"/><rect x="8" y="10" width="8" height="2" fill="#93c5fd"/></svg></div>
-                <div class="kpi-name">عناوين طويلة (&gt;60)</div>
-                <div class="kpi-sev" id="sev-titles-long">—</div>
-                <div class="kpi-val" id="titles-long">0</div>
-              </div>
-
-              <!-- 8) عناوين قصيرة (<30) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M7 8h10" stroke="#22c55e" stroke-width="1.6"/><rect x="10.5" y="11" width="3" height="7" fill="#bbf7d0"/></svg></div>
-                <div class="kpi-name">عناوين قصيرة (&lt;30)</div>
-                <div class="kpi-sev" id="sev-titles-short">—</div>
-                <div class="kpi-val" id="titles-short">0</div>
-              </div>
-
-              <!-- 9) وصف ميتا طويل (>160) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" fill="#e0f2fe" stroke="#0ea5e9"/><rect x="6" y="8" width="12" height="2" fill="#0ea5e9"/><rect x="6" y="12" width="9" height="2" fill="#93c5fd"/></svg></div>
-                <div class="kpi-name">وصف ميتا طويل (&gt;160)</div>
-                <div class="kpi-sev" id="sev-meta-long">—</div>
-                <div class="kpi-val" id="meta-long">0</div>
-              </div>
-
-              <!-- 10) وصف ميتا قصير (<80) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" fill="#ecfeff" stroke="#06b6d4"/><rect x="6" y="8" width="7" height="2" fill="#06b6d4"/></svg></div>
-                <div class="kpi-name">وصف ميتا قصير (&lt;80)</div>
-                <div class="kpi-sev" id="sev-meta-short">—</div>
-                <div class="kpi-val" id="meta-short">0</div>
-              </div>
-
-              <!-- 11) روابط طويلة جدًا (>115) -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M7 12a5 5 0 005-5V6a5 5 0 10-5 6h0z" stroke="#ef4444" stroke-width="1.6"/><path d="M17 12a5 5 0 01-5 5v1a5 5 0 105-6h0z" stroke="#fca5a5" stroke-width="1.6"/></svg></div>
-                <div class="kpi-name">روابط طويلة جدًا (&gt;115)</div>
-                <div class="kpi-sev" id="sev-urls-long">—</div>
-                <div class="kpi-val" id="urls-long">0</div>
-              </div>
-
-              <!-- 12) صور بدون Alt -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#d1fae5" stroke="#10b981"/><path d="M8 12h8M10 9h4M10 15h4" stroke="#059669" stroke-width="1.6"/></svg></div>
-                <div class="kpi-name">صور بدون Alt</div>
-                <div class="kpi-sev" id="sev-imgs-no-alt">—</div>
-                <div class="kpi-val" id="imgs-no-alt">0</div>
-              </div>
-
-              <!-- 13) صور > 100KB -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" fill="#fee2e2" stroke="#ef4444"/><circle cx="9" cy="10" r="2" fill="#ef4444"/><path d="M20 17l-5-4-4 3-3-2-4 3" stroke="#ef4444" stroke-width="1.2"/></svg></div>
-                <div class="kpi-name">صور &gt; 100KB</div>
-                <div class="kpi-sev" id="sev-imgs-large">—</div>
-                <div class="kpi-val" id="imgs-large">0</div>
-              </div>
-
-              <!-- 14) روابط مكسورة -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3l9-16z" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4"/><circle cx="12" cy="17" r="1.3" fill="#f59e0b"/><rect x="11.2" y="9" width="1.6" height="5" rx=".8" fill="#f59e0b"/></svg></div>
-                <div class="kpi-name">روابط مكسورة</div>
-                <div class="kpi-sev" id="sev-broken-links">—</div>
-                <div class="kpi-val" id="broken-links">0</div>
-              </div>
-
-              <!-- 15) صفحات محظورة -->
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/><path d="M8 8l8 8" stroke="#dc2626" stroke-width="1.6"/></svg></div>
-                <div class="kpi-name">صفحات محظورة</div>
-                <div class="kpi-sev" id="sev-pages-blocked">—</div>
-                <div class="kpi-val" id="pages-blocked">0</div>
-              </div>
-            </div>
-
-            <!-- صف أخير بخانتين -->
-            <div class="kpi-tail">
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7h18" stroke="#f59e0b" stroke-width="1.4"/><rect x="4" y="8" width="16" height="12" rx="2" fill="#fef3c7" stroke="#f59e0b"/></svg></div>
-                <div class="kpi-name">عمر النطاق</div>
-                <div class="kpi-sev" id="sev-domain-age">—</div>
-                <div class="kpi-val" id="domain-age">—</div>
-              </div>
-              <div class="kpi">
-                <div class="kpi-ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#fee2e2" stroke="#ef4444"/><path d="M8 12h8M12 8v8" stroke="#ef4444" stroke-width="1.6"/></svg></div>
-                <div class="kpi-name">Spam Risk (0–100)</div>
-                <div class="kpi-sev" id="sev-spam-risk">—</div>
-                <div class="kpi-val" id="spam-risk">0</div>
-              </div>
-            </div>
-          </section>
-
-          <!-- الدفع / PDF -->
-          <section class="card">
-            <div class="cta">
-              <p>إحصل على ملفات CSV لجميع الروابط بـ 10 ريال سعودي فقط</p>
-              <button class="btn brand" id="payment-btn">انتقل إلى الدفع</button>
-              <div id="pdf-section" class="hide" style="margin-top:0.6rem">
-                <button class="btn pdf-button" id="pdf-generate-btn">توليد PDF</button>
-              </div>
-              <div class="footer-note" id="notes"></div>
-            </div>
-          </section>
-        </section>
-      </div>
     </div>
-  </main>
+  </div>
 
-  <!-- jsPDF -->
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" crossorigin="anonymous"></script>
-
-  <script>
-    /************ إعدادات عامة ************/
-    const WORKER_BASE = 'https://seo-checker.anasshopify88.workers.dev';
-    const PAYMENT_LINK = '#';
-    const RETURN_PARAM = 'paid';
-    const RETURN_VALUE = '1';
-
-    // رفع الحد وتثبيت وضع الزحف الشامل
-    const MAX_PAGES_FIXED = 100000; // حد مرتفع لتغطية كاملة (العامل يسمح بأكثر)
-    const DEPTH_MODE = 'auto';      // auto=عمق مرتفع داخل العامل
-    const FORCED_MODE = 'mixed';    // دائمًا زحف شامل (Sitemap + داخلي)
-
-    const el = id => document.getElementById(id);
-    const setText = (id, v) => { const n = el(id); if(n) n.textContent = v; };
-
-    // ✅ أزلنا تحويل الصفر إلى علامة صح. أصبحت تعرض القيمة كما هي.
-    const displayVal = (id, v) => {
-      const out = (v === null || v === undefined) ? '—' : v;
-      setText(id, out);
-    };
-
-    // Back/Home
-    el('btn-back').addEventListener('click', ()=> history.back());
-    el('btn-home').addEventListener('click', ()=> location.href='https://anasrashed.com');
-
-    // حالة الدفع
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const params = new URLSearchParams(location.search);
-      if (params.get(RETURN_PARAM) === RETURN_VALUE) localStorage.setItem('seo_paid','1');
-      if (localStorage.getItem('seo_paid') === '1') el('pdf-section').classList.remove('hide');
-    });
-
-    // الدفع
-    document.getElementById('payment-btn').addEventListener('click', ()=> location.href = PAYMENT_LINK);
-
-    function isValidHttpUrl(value) {
-      try { const u = new URL(value); return (u.protocol === 'http:' || u.protocol === 'https:'); } catch { return false; }
-    }
-
-    /************ تقدّم مرئي حي ************/
-    let prog = { t:null, current:0, softCap:85, stepMs:200, easing:0.12, totalKnown:0, currKnown:0, startedAt:0 };
-    function renderProgress(percent){
-      percent = Math.max(0, Math.min(100, percent|0));
-      const bar = el('pbar');
-      if (bar) bar.style.width = percent + '%';
-      setText('pcent', percent + '%');
-    }
-    function setProgress(curr, total){
-      total = Math.max(1, total);
-      setText('current-page', curr);
-      setText('total-pages', total);
-      setText('phelper', `تم فحص ${curr} من ${total} صفحة`);
-      const exact = Math.round((curr/total)*100);
-      prog.currKnown = curr; prog.totalKnown = total;
-      if (exact > prog.current) { prog.current = exact; renderProgress(prog.current); }
-    }
-    function setWorking(state){ const btn = el('start-btn'); btn.disabled = state; btn.textContent = state ? 'جاري الفحص…' : 'ابدأ الفحص'; }
-    function note(msg){ const n = el('notes'); if (n) n.textContent = msg || ''; }
-    function startFakeProgress(){
-      stopFakeProgress(); prog.current=0; prog.currKnown=0; prog.totalKnown=0; prog.startedAt=performance.now(); renderProgress(0);
-      setText('phelper', 'جارٍ الزحف…');
-      prog.t = setInterval(()=>{
-        let exact = 0;
-        if (prog.totalKnown > 0) exact = Math.round((prog.currKnown / prog.totalKnown) * 100);
-        const target = Math.max(exact, prog.softCap);
-        const delta = Math.max(0.6, (target - prog.current) * prog.easing);
-        prog.current = Math.min(target, prog.current + delta);
-        renderProgress(Math.floor(prog.current));
-      }, prog.stepMs);
-    }
-    function finalizeProgress(to=100){
-      stopFakeProgress();
-      const start = prog.current|0, end = Math.max(start, to), dur = 500, t0=performance.now();
-      (function anim(now){
-        const k = Math.min(1, (now - t0)/dur);
-        const eased = start + (end - start) * (0.5 - Math.cos(Math.PI*k)/2);
-        renderProgress(Math.round(eased));
-        if (k < 1) requestAnimationFrame(anim);
-      })(performance.now());
-      setText('phelper','اكتمل الفحص');
-    }
-    function stopFakeProgress(){ if (prog.t){ clearInterval(prog.t); prog.t = null; } }
-
-    function ageLabel(days){
-      if (!days || days <= 0) return '—';
-      const years = Math.floor(days/365);
-      const months = Math.floor((days%365)/30);
-      if (years && months) return `${years} سنة و ${months} شهر`;
-      if (years) return `${years} سنة`;
-      if (months) return `${months} شهر`;
-      return `${days} يوم`;
-    }
-
-    /************ النقرة الرئيسية ************/
-    el('start-btn').addEventListener('click', async ()=>{
-      const url = el('store-url').value.trim();
-      if (!isValidHttpUrl(url)) { el('status-line').textContent = 'رجاءً أدخل رابط متجر صالح يبدأ بـ http(s)://'; return; }
-
-      // تهيئة العرض
-      el('status-line').textContent = 'يستغرق وقتاً أطول للمواقع الكبيرة…';
-      setText('current-page', 0); setText('total-pages', 0); renderProgress(0);
-      startFakeProgress(); setWorking(true); note('');
-
-      const t0 = performance.now();
-      try {
-        const crawlURL = new URL('/crawl', WORKER_BASE);
-        crawlURL.searchParams.set('url', url);
-        crawlURL.searchParams.set('max', String(MAX_PAGES_FIXED));
-        crawlURL.searchParams.set('depth', DEPTH_MODE);
-        crawlURL.searchParams.set('mode', FORCED_MODE);
-
-        const resp = await fetch(crawlURL, { method:'GET' });
-        if (!resp.ok) throw new Error('فشل الاتصال بالزاحف');
-        const data = await resp.json();
-
-        const estimatedTotal = Math.max(
-          data?.pages?.length || 0,
-          data?.sitemap_info?.discovered_urls_count || 0,
-          1
-        );
-
-        setProgress(Math.min(estimatedTotal, (data.pages?.length || 0)), Math.max(estimatedTotal, 1));
-        el('status-line').textContent = 'تحليل النتائج…';
-
-        const summary = computeSummary(data);
-        const t1 = performance.now();
-
-        // PageSpeed + Domain Age + SpamRisk من السيرفر
-        const metricsURL = new URL('/metrics', WORKER_BASE);
-        const domain = new URL(data.origin).hostname;
-        metricsURL.searchParams.set('domain', domain);
-
-        let metrics = { psi_mobile:null, psi_desktop:null, domain_age_days:null, spam_risk:null, spam_reasons:[] };
-        try {
-          const mx = await fetch(metricsURL, { method:'GET' });
-          if (mx.ok) metrics = await mx.json();
-        } catch {}
-
-        fillSummary(summary, data.origin, metrics);
-        setText('scanned-count', summary.pagesScanned);
-        setText('exec-time', ((t1 - t0)/1000).toFixed(2));
-        el('status-line').textContent = 'انتهى الفحص ✔️';
-
-        window.__CRAWL_DATA__ = data;
-        window.__SUMMARY__ = summary;
-        window.__METRICS__ = metrics;
-
-        // ✅ تنظيف أسباب السبام (بدون عمر النطاق)
-        const rawReasons = []
-          .concat(data.spam_reasons_partial || [])
-          .concat(metrics.spam_reasons || []);
-        const BLOCKED = ['عمر نطاق حديث','عمر النطاق حديث','الدومين جديد','الدومين حديث'];
-        const cleaned = Array.from(new Set(
-          rawReasons
-            .map(r => (r||'').toString().trim())
-            .filter(r => r.length && !BLOCKED.some(b => r.includes(b)))
-        ));
-        if (cleaned.length){
-          note('أسباب Spam Risk: ' + cleaned.join(' • '));
-        } else {
-          note('');
-        }
-
-        finalizeProgress(100);
-        setProgress(summary.pagesScanned, Math.max(estimatedTotal, summary.pagesScanned, 1));
-
-      } catch (e){
-        el('status-line').textContent = 'خطأ أثناء الفحص: ' + e.message;
-        setText('phelper','فشل الفحص');
-        stopFakeProgress(); renderProgress(0);
-      } finally {
-        setWorking(false);
-      }
-    });
-
-    /************ الحسابات (الأساسية فقط) ************/
-    function computeSummary(data){
-      const pages = data.pages || [];
-      const pagesScanned = pages.length;
-
-      let scores = [], imgsLarge=0, brokenLinks=0, titlesLong=0, titlesShort=0, metaLong=0, metaShort=0, imgsNoAlt=0, urlsLong=0, titlesDup=0, pagesBlocked=0;
-      let speedD=[], speedM=[];
-      const titlesCount = {};
-
-      for (const page of pages){
-        const title = (page.title || '').trim();
-        if (title.length > 60) titlesLong++;
-        if (title.length && title.length < 30) titlesShort++;
-        if (title) titlesCount[title] = (titlesCount[title]||0) + 1;
-
-        const meta = page.description || '';
-        if (meta.length > 160) metaLong++;
-        if (meta && meta.length < 80) metaShort++;
-
-        imgsLarge += page.total_img_over_100kb || 0;
-
-        const imgs = Array.isArray(page.images)? page.images : [];
-        for (const img of imgs) if (!img.alt || img.alt.trim()==='') imgsNoAlt++;
-
-        if (page.url && page.url.length > 115) urlsLong++;
-        if (page.blocked) pagesBlocked++;
-        brokenLinks += page.broken_links_count || 0;
-
-        const sD = estimateSpeedScore(page,false); speedD.push(sD);
-        const sM = estimateSpeedScore(page,true);  speedM.push(sM);
-
-        scores.push(estimateOnPageScore(page, sD, sM));
-      }
-      for (const t in titlesCount) if (titlesCount[t] > 1) titlesDup += (titlesCount[t]-1);
-
-      const avg = arr => arr.length? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
-
-      return {
-        pagesScanned,
-        onPageScore: Number(avg(scores).toFixed(1)),
-        speedDesktop: Number(avg(speedD).toFixed(1)),
-        speedMobile:  Number(avg(speedM).toFixed(1)),
-        imgsLarge, brokenLinks,
-        sitemapExists: !!data.sitemap_exists,
-        smapScore: Math.round(data.smap_score || 0),
-        titlesLong, titlesShort, metaLong, metaShort, imgsNoAlt, urlsLong, titlesDup, pagesBlocked
-      };
-    }
-
-    function estimateOnPageScore(page, sd, sm){
-      let score = 0;
-      const title = page.title || '';
-      if (title.length >= 30 && title.length <= 60) score += 10;
-      const meta = page.description || '';
-      if (meta.length >= 80 && meta.length <= 160) score += 10;
-
-      const h1 = page.h1 || '';
-      if (h1 && title && h1.trim() === title.trim()) score += 10; else if (h1) score += 6;
-
-      if (page.canonical && /^https?:\/\//.test(page.canonical)) score += 5;
-      if (!page.blocked) score += 5;
-
-      const imgs = Array.isArray(page.images)? page.images : [];
-      const noAlt = imgs.filter(i => !i.alt || i.alt.trim()==='').length;
-      if (imgs.length === 0) score += 10;
-      else {
-        const ratio = noAlt / imgs.length;
-        if (ratio < 0.05) score += 10;
-        else if (ratio < 0.20) score += 6;
-      }
-
-      if (page.url && page.url.length <= 115 && !page.url.includes('?')) score += 5;
-      const h = page.headersSubset || {};
-      if (h['og:title'] || h['twitter:title']) score += 5;
-      if (page.internal_links && page.internal_links.length >= 5) score += 5;
-
-      const sp = (sd + sm)/2;
-      score += sp * 0.2;
-
-      return Math.min(100, Math.round(Math.max(0, score)));
-    }
-
-    function estimateSpeedScore(page, mobile){
-      let s = 100;
-      const big = page.total_img_over_100kb||0;
-      s -= Math.min(big*(mobile?1.5:1), 30);
-
-      const blocks = (page.css_blocks||0) + (page.js_blocks||0);
-      s -= Math.min(blocks*(mobile?2:1), 20);
-
-      const imgs = page.images || [];
-      if (imgs.length){
-        const lazy = imgs.filter(i => i.loading==='lazy').length;
-        if ((lazy/imgs.length) < 0.2) s -= (mobile?15:10);
-      }
-      const ratio = page.modern_formats_ratio || 0;
-      if (ratio < 0.5) s -= (mobile?10:5);
-      if (!page.compression) s -= (mobile?10:5);
-      return Math.max(0, Math.round(s));
-    }
-
-    /************ شدة/تقييم لكل بطاقة ************/
-    function setSeverity(elId, level, label){
-      const el = document.getElementById(elId);
-      if(!el) return;
-      el.className = 'kpi-sev ' + (level ? ('sev-' + level) : '');
-      el.textContent = label || '—';
-    }
-
-    // ---- خرائط تقييم جديدة حسب طلبك ----
-    // 1) لبطاقة ON-PAGE: ضعيف | جيد | ممتاز
-    function sevTriScore(v){
-      if (v >= 80) return ['excellent','ممتاز'];
-      if (v >= 60) return ['good','جيد'];
-      return ['weak','ضعيف'];
-    }
-    // 2) لبطاقات المشاكل: خطر | جيد | ممتاز
-    function sevTriRisk(count){
-      if (count === 0) return ['excellent','ممتاز'];
-      if (count <= 5)  return ['good','جيد'];
-      return ['danger','خطر'];
-    }
-
-    // الموجود سابقًا (للأشياء الباقية)
-    function sevForScore(v){ // أعلى = أفضل
-      if (v >= 90) return ['excellent','ممتاز'];
-      if (v >= 80) return ['good','جيد'];
-      if (v >= 60) return ['medium','متوسط'];
-      if (v >= 40) return ['weak','ضعيف'];
-      return ['danger','خطر'];
-    }
-    function sevForCountGeneric(v){ // أقل = أفضل
-      if (v === 0) return ['excellent','ممتاز'];
-      if (v <= 2)  return ['normal','طبيعي'];
-      if (v <= 5)  return ['good','جيد'];
-      if (v <= 10) return ['medium','متوسط'];
-      if (v <= 25) return ['weak','ضعيف'];
-      return ['danger','خطر'];
-    }
-    function sevForPagesBlocked(v){
-      if (v === 0) return ['excellent','ممتاز'];
-      if (v <= 2)  return ['normal','طبيعي'];
-      if (v <= 5)  return ['medium','متوسط'];
-      if (v <= 10) return ['weak','ضعيف'];
-      return ['danger','خطر'];
-    }
-    function sevForSpamRisk(v){ // أقل = أفضل
-      if (v <= 10) return ['excellent','ممتاز'];
-      if (v <= 30) return ['good','جيد'];
-      if (v <= 60) return ['medium','متوسط'];
-      if (v <= 80) return ['weak','ضعيف'];
-      return ['danger','خطر'];
-    }
-    function sevForSitemapScore(v){ // أعلى = أفضل
-      if (v >= 80) return ['excellent','ممتاز'];
-      if (v >= 60) return ['good','جيد'];
-      if (v >= 40) return ['medium','متوسط'];
-      if (v >= 20) return ['weak','ضعيف'];
-      return ['danger','خطر'];
-    }
-
-    function fillSummary(s, origin, metrics){
-      setText('summary-origin', origin || '—');
-
-      // قيم العرض
-      setText('o-score', s.onPageScore);
-      displayVal('speed-desktop', (metrics.psi_desktop ?? s.speedDesktop));
-      displayVal('speed-mobile',  (metrics.psi_mobile  ?? s.speedMobile));
-
-      // ✅ تبقى علامة صح/خطأ في "خريطة موقع" فقط
-      const sitemapSymbol = s.sitemapExists ? '✅' : '❌';
-      setText('sitemap', sitemapSymbol);
-
-      displayVal('smap-score', s.smapScore || 0);
-      setText('domain-age', ageLabel(metrics.domain_age_days || 0));
-
-      // ✅ عرض Spam Risk بشكل مضمون + تقييمه اللوني
-      const spamVal = Math.max(0, Math.min(100, Math.round(Number(metrics.spam_risk ?? 0))));
-      displayVal('spam-risk', spamVal);
-
-      displayVal('imgs-large', s.imgsLarge);
-      displayVal('broken-links', s.brokenLinks);
-      displayVal('titles-long', s.titlesLong);
-      displayVal('titles-short', s.titlesShort);
-      displayVal('meta-long', s.metaLong);
-      displayVal('meta-short', s.metaShort);
-      displayVal('imgs-no-alt', s.imgsNoAlt);
-      displayVal('urls-long', s.urlsLong);
-      displayVal('titles-dup', s.titlesDup);
-      displayVal('pages-blocked', s.pagesBlocked);
-
-      // --- التقييمات (حسب المطلوب) ---
-      // ON-PAGE: ضعيف/جيد/ممتاز
-      setSeverity('sev-o-score', ...sevTriScore(s.onPageScore));
-
-      // السرعات تبقى كما هي (سلم 5 حالات)
-      setSeverity('sev-speed-desktop', ...sevForScore(Number(metrics.psi_desktop ?? s.speedDesktop)));
-      setSeverity('sev-speed-mobile',  ...sevForScore(Number(metrics.psi_mobile  ?? s.speedMobile)));
-
-      // السايت ماب كما كانت
-      setSeverity('sev-sitemap', s.sitemapExists ? 'excellent' : 'danger', s.sitemapExists ? 'ممتاز' : 'خطر');
-      setSeverity('sev-smap-score', ...sevForSitemapScore(Number(s.smapScore||0)));
-
-      // بطاقات المشاكل: خطر/جيد/ممتاز
-      setSeverity('sev-imgs-large',  ...sevTriRisk(s.imgsLarge));
-      setSeverity('sev-meta-long',   ...sevTriRisk(s.metaLong));
-      setSeverity('sev-titles-short',...sevTriRisk(s.titlesShort));
-      setSeverity('sev-titles-long', ...sevTriRisk(s.titlesLong));
-      setSeverity('sev-urls-long',   ...sevTriRisk(s.urlsLong));
-      setSeverity('sev-imgs-no-alt', ...sevTriRisk(s.imgsNoAlt));
-      setSeverity('sev-meta-short',  ...sevTriRisk(s.metaShort));
-      setSeverity('sev-titles-dup',  ...sevTriRisk(s.titlesDup));
-
-      // ما لم يُطلب تغييره يبقى بمقياسه السابق
-      setSeverity('sev-broken-links',...sevForCountGeneric(s.brokenLinks));
-      setSeverity('sev-pages-blocked',...sevForPagesBlocked(s.pagesBlocked));
-
-      // تقييم spam risk
-      setSeverity('sev-spam-risk', ...sevForSpamRisk(spamVal));
-      // عمر الدومين: لا نعرض تقييم لوني (مخفي CSS)
-      // setSeverity('sev-domain-age', ...);
-    }
-
-    /************ توليد PDF (نفس البطاقات الأساسية) ************/
-    document.getElementById('pdf-generate-btn').addEventListener('click', ()=>{
-      if (localStorage.getItem('seo_paid') !== '1'){
-        document.getElementById('status-line').textContent = 'يجب تفعيل الوضع المدفوع أولاً';
-        return;
-      }
-      const data = window.__CRAWL_DATA__, summary = window.__SUMMARY__ || computeSummary(data), metrics = window.__METRICS__ || {};
-      generatePDF(data, summary, metrics);
-    });
-
-    function generatePDF(data, summary, metrics){
-      const { jsPDF } = window.jspdf || {};
-      if (!jsPDF){ document.getElementById('status-line').textContent = 'لم يتم تحميل مكتبة PDF'; return; }
-
-      const doc = new jsPDF({ unit:'pt', format:'a4' });
-      const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
-      const M = 40; let y = M;
-
-      doc.setFontSize(18); doc.text('تقرير SEO شامل', W/2, y, {align:'center'}); y += 28;
-      doc.setFontSize(12);
-      doc.text(`الموقع: ${document.getElementById('store-url').value}`, M, y); y += 18;
-      doc.text(`التاريخ: ${new Date().toLocaleDateString('ar-SA')}`, M, y); y += 18;
-      doc.text(`الصفحات المفحوصة: ${summary.pagesScanned}`, M, y); y += 26;
-
-      doc.setFontSize(14); doc.text('الملخص العام', M, y); y += 20;
-      doc.setFontSize(12);
-      const lines = [
-        ['ON-PAGE', summary.onPageScore],
-        ['سرعة (جوال)',   metrics.psi_mobile  ?? summary.speedMobile],
-        ['سرعة (كمبيوتر)', metrics.psi_desktop ?? summary.speedDesktop],
-        ['Sitemap', summary.sitemapExists ? '✅' : '❌'],
-        ['Sitemap Score', summary.smapScore],
-        ['Spam Risk', Math.max(0, Math.min(100, Math.round(Number(metrics.spam_risk ?? 0)) ))],
-        ['عناوين مكررة', summary.titlesDup],
-        ['عناوين طويلة', summary.titlesLong],
-        ['عناوين قصيرة', summary.titlesShort],
-        ['Meta طويل',  summary.metaLong],
-        ['Meta قصير',  summary.metaShort],
-        ['روابط طويلة جدًا', summary.urlsLong],
-        ['صور بلا Alt', summary.imgsNoAlt],
-        ['صور >100KB', summary.imgsLarge],
-        ['روابط مكسورة', summary.brokenLinks],
-        ['صفحات محظورة', summary.pagesBlocked],
-        ['عمر النطاق (أيام)', (metrics.domain_age_days||0) || 'غير متاح'],
-      ];
-      for (const [k,v] of lines){
-        doc.text(`${k}: ${v}`, M, y); y += 16; if (y > H - M){ doc.addPage(); y = M; }
-      }
-
-      doc.save('seo-report.pdf');
-    }
-  </script>
 </body>
 </html>
